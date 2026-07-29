@@ -10,7 +10,7 @@
  * @see {@link https://github.com/sponsors/tomaschochola} GitHub Sponsors
  */
 
-export const browserArtifactRuntimeKey = '@tomaschochola/tooling-webpack/browser-artifacts';
+export const browserArtifactRuntimeKey = '@tomaschochola/tooling-browser-artifacts/runtime';
 
 export interface BrowserArtifactSize {
   readonly height: number;

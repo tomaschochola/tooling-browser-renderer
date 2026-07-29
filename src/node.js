@@ -19,7 +19,7 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { compileBrowserEntries } from './webpack.js';
 
-const browserArtifactRuntimeKey = '@tomaschochola/tooling-webpack/browser-artifacts';
+const browserArtifactRuntimeKey = '@tomaschochola/tooling-browser-artifacts/runtime';
 const defaultScript = fileURLToPath(new URL('./default.ts', import.meta.url));
 const defaultStylesheet = fileURLToPath(new URL('./default.scss', import.meta.url));
 const defaultTemplate = fileURLToPath(new URL('./default.html', import.meta.url));
