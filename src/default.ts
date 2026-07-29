@@ -10,8 +10,4 @@
  * @see {@link https://github.com/sponsors/tomaschochola} GitHub Sponsors
  */
 
-import { PrettierConfigBuilder } from '@tomaschochola/tooling-prettier';
-
-export default new PrettierConfigBuilder()
-  .addXmlPlugin()
-  .toConfig();
+import '@fontsource-variable/atkinson-hyperlegible-next';

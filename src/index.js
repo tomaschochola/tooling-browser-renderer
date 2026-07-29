@@ -10,8 +10,4 @@
  * @see {@link https://github.com/sponsors/tomaschochola} GitHub Sponsors
  */
 
-import { PrettierConfigBuilder } from '@tomaschochola/tooling-prettier';
-
-export default new PrettierConfigBuilder()
-  .addXmlPlugin()
-  .toConfig();
+export { browserArtifactDefaults, generateBrowserArtifacts } from './node.js';

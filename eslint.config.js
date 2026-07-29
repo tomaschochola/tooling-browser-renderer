@@ -12,16 +12,16 @@
 
 import { ESLintConfigBuilder, filePatterns } from '@tomaschochola/tooling-eslint';
 
-// eslint-disable-next-line no-restricted-exports
+const javascriptFiles = filePatterns.allJavaScriptFiles;
+const typescriptFiles = filePatterns.allTypeScriptFiles;
+
 export default new ESLintConfigBuilder()
   .addNodeGlobals()
+  .addBrowserGlobals()
   .addGlobalIgnores(filePatterns.defaultIgnorePatterns)
   .addGlobalIgnores(['node_modules'])
   .addJavaScriptRecommendedRules()
-  .addJavaScriptPolicyRules()
-  .addStylisticCustomizedRules()
-  .addStylisticPolicyRules()
-  .disableStylisticLegacyRules()
-  .addSonarJsRecommendedRules()
-  .addSonarJsPolicyOverrides()
+  .addTypeScriptStrictTypeCheckedRules({ files: typescriptFiles })
+  .enableTypeScriptProjectService({ files: typescriptFiles })
+  .disableTypeScriptTypeChecking({ files: javascriptFiles })
   .toConfig();

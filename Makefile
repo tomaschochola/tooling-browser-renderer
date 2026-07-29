@@ -29,6 +29,8 @@ help:
 	printf '\033[1m%-14s\033[0m  %s\n' 'fix' 'Run all automatic fixers.'
 	printf '\033[1m%-14s\033[0m  %s\n' 'check' 'Run lint, static analysis, tests, and audits.'
 	printf '\033[1m%-14s\033[0m  %s\n' 'lint' 'Run code style checks.'
+	printf '\033[1m%-14s\033[0m  %s\n' 'static' 'Run static analysis.'
+	printf '\033[1m%-14s\033[0m  %s\n' 'test' 'Run tests.'
 	printf '\033[1m%-14s\033[0m  %s\n' 'audit' 'Run dependency/security audits.'
 	printf '\033[1m%-14s\033[0m  %s\n' 'deps_install' 'Install dependencies from current lock files.'
 	printf '\033[1m%-14s\033[0m  %s\n' 'deps_update' 'Refresh dependencies and generated lock files.'
@@ -36,8 +38,12 @@ help:
 	printf '\033[1m%-14s\033[0m  %s\n' 'distclean' 'Run clean and remove generated lock files.'
 	printf '\033[1m%-14s\033[0m  %s\n' 'eslint_fix' 'Fix JavaScript/TypeScript lint issues with ESLint.'
 	printf '\033[1m%-14s\033[0m  %s\n' 'prettier_fix' 'Format files with Prettier.'
+	printf '\033[1m%-14s\033[0m  %s\n' 'stylelint_fix' 'Fix stylesheet lint issues with Stylelint.'
 	printf '\033[1m%-14s\033[0m  %s\n' 'eslint_check' 'Check JavaScript/TypeScript with ESLint.'
 	printf '\033[1m%-14s\033[0m  %s\n' 'prettier_check' 'Check formatting with Prettier.'
+	printf '\033[1m%-14s\033[0m  %s\n' 'stylelint_check' 'Check stylesheets with Stylelint.'
+	printf '\033[1m%-14s\033[0m  %s\n' 'typescript_check' 'Type-check TypeScript.'
+	printf '\033[1m%-14s\033[0m  %s\n' 'node_test' 'Run Node.js tests.'
 	printf '\033[1m%-14s\033[0m  %s\n' 'npm_audit' 'Run npm audit at the configured severity level.'
 	printf '\033[1m%-14s\033[0m  %s\n' 'npm_install' 'Install npm dependencies from package-lock.json.'
 	printf '\033[1m%-14s\033[0m  %s\n' 'npm_update' 'Refresh npm dependencies and package-lock.json.'
@@ -46,13 +52,19 @@ help:
 	printf '\033[1m%-14s\033[0m  %s\n' 'devcontainer' 'Open a devcontainer shell, then stop the container.'
 
 .PHONY: fix
-fix: eslint_fix prettier_fix
+fix: eslint_fix prettier_fix stylelint_fix
 
 .PHONY: check
-check: lint audit
+check: lint static test audit
 
 .PHONY: lint
-lint: eslint_check prettier_check
+lint: eslint_check prettier_check stylelint_check
+
+.PHONY: static
+static: typescript_check
+
+.PHONY: test
+test: node_test
 
 .PHONY: audit
 audit: npm_audit
@@ -79,6 +91,10 @@ eslint_fix: ./node_modules ./package.json ./package-lock.json ./eslint.config.js
 prettier_fix: ./node_modules ./package.json ./package-lock.json ./prettier.config.js
 	npm exec --ignore-scripts -- prettier -w .
 
+.PHONY: stylelint_fix
+stylelint_fix: ./node_modules ./package.json ./package-lock.json ./stylelint.config.js
+	npm exec --ignore-scripts -- stylelint --allow-empty-input --fix ./**/*.{sass,scss,css}
+
 .PHONY: eslint_check
 eslint_check: ./node_modules ./package.json ./package-lock.json ./eslint.config.js
 	npm exec --ignore-scripts -- eslint --concurrency=auto .
@@ -86,6 +102,18 @@ eslint_check: ./node_modules ./package.json ./package-lock.json ./eslint.config.
 .PHONY: prettier_check
 prettier_check: ./node_modules ./package.json ./package-lock.json ./prettier.config.js
 	npm exec --ignore-scripts -- prettier -c .
+
+.PHONY: stylelint_check
+stylelint_check: ./node_modules ./package.json ./package-lock.json ./stylelint.config.js
+	npm exec --ignore-scripts -- stylelint --allow-empty-input ./**/*.{sass,scss,css}
+
+.PHONY: typescript_check
+typescript_check: ./node_modules ./package.json ./package-lock.json ./tsconfig.json
+	npm exec --ignore-scripts -- tsc --noEmit --project ./tsconfig.json
+
+.PHONY: node_test
+node_test: ./node_modules ./package.json ./package-lock.json
+	node --test
 
 .PHONY: npm_audit
 npm_audit: ./node_modules ./package.json ./package-lock.json

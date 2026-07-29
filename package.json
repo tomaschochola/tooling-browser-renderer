@@ -4,9 +4,13 @@
     "name": "Tomáš Chochola",
     "url": "https://github.com/tomaschochola"
   },
+  "bin": {
+    "browser-artifacts": "./src/cli.js"
+  },
+  "browser": "./src/browser.ts",
   "bugs": {
     "email": "tomaschochola@tomaschochola.cz",
-    "url": "https://github.com/tomaschochola/tooling-TODO/issues"
+    "url": "https://github.com/tomaschochola/tooling-browser-artifacts/issues"
   },
   "contributors": [
     {
@@ -15,33 +19,72 @@
       "url": "https://github.com/tomaschochola"
     }
   ],
-  "dependencies": {},
-  "description": "@tomaschochola/tooling-TODO",
+  "dependencies": {
+    "@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",
+    "css-minimizer-webpack-plugin": "^8.0.0",
+    "html-loader": "^5.1.0",
+    "html-minimizer-webpack-plugin": "^6.0.0",
+    "html-webpack-plugin": "^5.6.8",
+    "image-minimizer-webpack-plugin": "^5.0.0",
+    "json-minimizer-webpack-plugin": "^5.0.1",
+    "playwright": "^1.62.0",
+    "postcss-loader": "^8.2.1",
+    "sass-embedded": "^1.100.0",
+    "sass-loader": "^17.0.0",
+    "sharp": "^0.35.3",
+    "svgo": "^4.0.2",
+    "terser-webpack-plugin": "^5.6.1",
+    "ts-loader": "^9.6.2",
+    "typescript": "^6.0.3",
+    "webpack": "^5.109.2"
+  },
+  "description": "@tomaschochola/tooling-browser-artifacts",
   "devDependencies": {
     "@tomaschochola/tooling-eslint": "github:tomaschochola/tooling-eslint#1.x",
-    "@tomaschochola/tooling-prettier": "github:tomaschochola/tooling-prettier#1.x"
+    "@tomaschochola/tooling-prettier": "github:tomaschochola/tooling-prettier#1.x",
+    "@tomaschochola/tooling-stylelint": "github:tomaschochola/tooling-stylelint#1.x",
+    "@tomaschochola/tooling-typescript": "github:tomaschochola/tooling-typescript#1.x"
   },
   "engines": {
     "node": ">=24.11.0 <25.0.0",
     "npm": ">=11.0.0 <12.0.0"
   },
+  "files": [
+    "src"
+  ],
   "funding": {
     "type": "github",
     "url": "https://github.com/sponsors/tomaschochola"
   },
-  "homepage": "https://github.com/tomaschochola/tooling-TODO",
+  "exports": {
+    ".": {
+      "types": "./src/browser.ts",
+      "browser": "./src/browser.ts",
+      "default": "./src/index.js"
+    },
+    "./browser": {
+      "types": "./src/browser.ts",
+      "default": "./src/browser.ts"
+    },
+    "./node": {
+      "types": "./src/index.ts",
+      "default": "./src/index.js"
+    },
+    "./cli": "./src/cli.js"
+  },
+  "homepage": "https://github.com/tomaschochola/tooling-browser-artifacts",
   "keywords": [
     "tomaschochola",
     "TomasChochola",
     "Tomas Chochola",
     "Tomáš Chochola",
-    "tooling-TODO"
+    "tooling-browser-artifacts"
   ],
   "license": "CC-BY-ND-4.0",
   "main": "./src/index.js",
-  "name": "@tomaschochola/tooling-TODO",
+  "name": "@tomaschochola/tooling-browser-artifacts",
   "packageManager": "npm@11.16.0",
-  "repository": "github:tomaschochola/tooling-TODO",
-  "sideEffects": false,
-  "type": "module"
+  "repository": "github:tomaschochola/tooling-browser-artifacts",
+  "type": "module",
+  "types": "./src/browser.ts"
 }

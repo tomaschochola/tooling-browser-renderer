@@ -10,8 +10,6 @@
  * @see {@link https://github.com/sponsors/tomaschochola} GitHub Sponsors
  */
 
-import { PrettierConfigBuilder } from '@tomaschochola/tooling-prettier';
+declare const stylesheet: CSSStyleSheet;
 
-export default new PrettierConfigBuilder()
-  .addXmlPlugin()
-  .toConfig();
+export default stylesheet;

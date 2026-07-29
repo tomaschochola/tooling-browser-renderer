@@ -10,8 +10,9 @@
  * @see {@link https://github.com/sponsors/tomaschochola} GitHub Sponsors
  */
 
-import { PrettierConfigBuilder } from '@tomaschochola/tooling-prettier';
+import { StylelintConfigBuilder } from '@tomaschochola/tooling-stylelint';
 
-export default new PrettierConfigBuilder()
-  .addXmlPlugin()
+export default new StylelintConfigBuilder()
+  .addStandardScssConfig()
+  .addPrettierCompatibility()
   .toConfig();
