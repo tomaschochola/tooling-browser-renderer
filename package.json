@@ -43,18 +43,8 @@
     "@tomaschochola/tooling-eslint": "github:tomaschochola/tooling-eslint#1.x",
     "@tomaschochola/tooling-prettier": "github:tomaschochola/tooling-prettier#1.x",
     "@tomaschochola/tooling-stylelint": "github:tomaschochola/tooling-stylelint#1.x",
+    "@tomaschochola/tooling-trimmer": "github:tomaschochola/tooling-trimmer#2.x",
     "@tomaschochola/tooling-typescript": "github:tomaschochola/tooling-typescript#1.x"
-  },
-  "engines": {
-    "node": ">=24.11.0 <25.0.0",
-    "npm": ">=11.0.0 <12.0.0"
-  },
-  "files": [
-    "src"
-  ],
-  "funding": {
-    "type": "github",
-    "url": "https://github.com/sponsors/tomaschochola"
   },
   "exports": {
     ".": {
@@ -72,6 +62,13 @@
     },
     "./cli": "./src/cli.js"
   },
+  "files": [
+    "src"
+  ],
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/tomaschochola"
+  },
   "homepage": "https://github.com/tomaschochola/tooling-browser-artifacts",
   "keywords": [
     "tomaschochola",
@@ -83,8 +80,9 @@
   "license": "CC-BY-ND-4.0",
   "main": "./src/index.js",
   "name": "@tomaschochola/tooling-browser-artifacts",
-  "packageManager": "npm@11.16.0",
   "repository": "github:tomaschochola/tooling-browser-artifacts",
+  "sideEffects": true,
   "type": "module",
-  "types": "./src/browser.ts"
+  "types": "./src/browser.ts",
+  "version": "2.0.0"
 }
