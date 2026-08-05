@@ -14,5 +14,4 @@ import { StylelintConfigBuilder } from '@tomaschochola/tooling-stylelint';
 
 export default new StylelintConfigBuilder()
   .addStandardScssConfig()
-  .addPrettierCompatibility()
   .toConfig();

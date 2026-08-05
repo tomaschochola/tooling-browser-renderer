@@ -10,6 +10,20 @@
  * @see {@link https://github.com/sponsors/tomaschochola} GitHub Sponsors
  */
 
-import { PrettierConfigBuilder } from '@tomaschochola/tooling-prettier';
+import { defineBrowserArtifacts } from '../src/browser';
 
-export default new PrettierConfigBuilder().toConfig();
+defineBrowserArtifacts(({ pdf, png }) => {
+  png('images/card.png', {
+    height: 32,
+    width: 64,
+  }, (root) => {
+    root.textContent = 'PNG';
+  });
+
+  pdf('documents/page.pdf', {
+    height: 64,
+    width: 64,
+  }, (root) => {
+    root.textContent = 'PDF';
+  });
+});

@@ -11,7 +11,11 @@
  */
 
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
 import { execFile } from 'node:child_process';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import test from 'node:test';
@@ -19,6 +23,7 @@ import { browserArtifactDefaults, generateBrowserArtifacts } from '../src/index.
 
 const execute = promisify(execFile);
 const cli = fileURLToPath(new URL('../src/cli.js', import.meta.url));
+const artifacts = new URL('./artifacts.ts', import.meta.url);
 
 test('exports the browser artifact programmatic API', () => {
   assert.equal(typeof generateBrowserArtifacts, 'function');
@@ -42,4 +47,36 @@ test('rejects incomplete browser artifact CLI invocations', async () => {
       stderr: /--output is required/u,
     },
   );
+});
+
+test('generates validated PNG and PDF artifacts and replaces stale output', async () => {
+  const projectDirectory = await mkdtemp(join(tmpdir(), 'tooling-browser-artifacts-test-'));
+  const outputDirectory = join(projectDirectory, 'output');
+
+  try {
+    await mkdir(outputDirectory);
+    await writeFile(join(outputDirectory, 'stale.txt'), 'stale');
+
+    await generateBrowserArtifacts({
+      entries: [...browserArtifactDefaults.entries, artifacts],
+      outputDirectory,
+      projectDirectory,
+    });
+
+    const png = await readFile(join(outputDirectory, 'images/card.png'));
+    const pdf = await readFile(join(outputDirectory, 'documents/page.pdf'));
+
+    assert.deepEqual(png.subarray(0, 8), Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+    assert.equal(png.readUInt32BE(16), 64);
+    assert.equal(png.readUInt32BE(20), 32);
+    assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
+    await assert.rejects(async () => await readFile(join(outputDirectory, 'stale.txt')), {
+      code: 'ENOENT',
+    });
+  } finally {
+    await rm(projectDirectory, {
+      force: true,
+      recursive: true,
+    });
+  }
 });

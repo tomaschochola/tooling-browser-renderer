@@ -83,6 +83,7 @@ function createConfiguration({
                   noEmit: false,
                   resolveJsonModule: true,
                   sourceMap: false,
+                  target: 'ES2025',
                 },
                 onlyCompileBundledFiles: true,
                 transpileOnly: true,
@@ -304,7 +305,7 @@ function createConfiguration({
     resolve: {
       extensions: ['.tsx', '.mts', '.ts', '.cts', '.jsx', '.mjs', '.js', '.cjs'],
     },
-    target: 'browserslist',
+    target: ['web', 'es2025'],
   };
 }
 

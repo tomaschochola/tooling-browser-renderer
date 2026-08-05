@@ -19,9 +19,11 @@ export class BrowserArtifactPrintPageElement extends HTMLElement {
     super();
 
     const document = this.ownerDocument;
+
     const root = this.attachShadow({
       mode: 'open',
     });
+
     const main = document.createElement('main');
     const slot = document.createElement('slot');
 

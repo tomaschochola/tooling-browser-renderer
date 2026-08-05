@@ -85,7 +85,7 @@ prettier_fix: ./node_modules/.package-lock.json ./package.json ./package-lock.js
 
 .PHONY: stylelint_fix
 stylelint_fix: ./node_modules/.package-lock.json ./package.json ./package-lock.json ./stylelint.config.js
-	npm exec --ignore-scripts -- stylelint --allow-empty-input --fix ./**/*.{sass,scss,css}
+	npm exec --ignore-scripts -- stylelint --ignore-path ./.gitignore --allow-empty-input --fix './**/*.{sass,scss,css}'
 
 .PHONY: eslint_check
 eslint_check: ./node_modules/.package-lock.json ./package.json ./package-lock.json ./eslint.config.js
@@ -97,7 +97,7 @@ prettier_check: ./node_modules/.package-lock.json ./package.json ./package-lock.
 
 .PHONY: stylelint_check
 stylelint_check: ./node_modules/.package-lock.json ./package.json ./package-lock.json ./stylelint.config.js
-	npm exec --ignore-scripts -- stylelint --allow-empty-input ./**/*.{sass,scss,css}
+	npm exec --ignore-scripts -- stylelint --ignore-path ./.gitignore --allow-empty-input './**/*.{sass,scss,css}'
 
 .PHONY: typescript_check
 typescript_check: ./node_modules/.package-lock.json ./package.json ./package-lock.json ./tsconfig.json

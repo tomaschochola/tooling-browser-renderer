@@ -24,18 +24,18 @@ export interface BrowserArtifactPdfMargin {
   readonly top?: number | string;
 }
 
-export type BrowserArtifactPdfFormat =
-  | 'A0'
-  | 'A1'
-  | 'A2'
-  | 'A3'
-  | 'A4'
-  | 'A5'
-  | 'A6'
-  | 'Ledger'
-  | 'Legal'
-  | 'Letter'
-  | 'Tabloid';
+export type BrowserArtifactPdfFormat
+  = | 'A0'
+    | 'A1'
+    | 'A2'
+    | 'A3'
+    | 'A4'
+    | 'A5'
+    | 'A6'
+    | 'Ledger'
+    | 'Legal'
+    | 'Letter'
+    | 'Tabloid';
 
 export interface BrowserArtifactPdfOptions {
   readonly displayHeaderFooter?: boolean;
@@ -94,29 +94,30 @@ interface BrowserArtifactPng extends BrowserArtifactBase {
 
 type BrowserArtifact = BrowserArtifactPdf | BrowserArtifactPng;
 
-type BrowserArtifactMetadata =
-  | Omit<BrowserArtifactPdf, 'compose'>
-  | Omit<BrowserArtifactPng, 'compose'>;
+type BrowserArtifactMetadata
+  = | Omit<BrowserArtifactPdf, 'compose'>
+    | Omit<BrowserArtifactPng, 'compose'>;
 
 interface BrowserArtifactRuntime {
-  list(): readonly BrowserArtifactMetadata[];
-  render(index: number): Promise<void>;
+  list: () => readonly BrowserArtifactMetadata[];
+  render: (index: number) => Promise<void>;
 }
 
 const maximumDimension = 16_384;
 const maximumPixels = 100_000_000;
 const artifacts: BrowserArtifact[] = [];
 const outputs = new Set<string>();
+
 let defined = false;
 
 function validateOutput(output: string, extension: '.pdf' | '.png'): void {
   const segments = output.split('/');
 
   if (
-    output === '' ||
-    output.includes('\\') ||
-    !output.toLowerCase().endsWith(extension) ||
-    segments.some((segment) => segment === '' || segment === '.' || segment === '..')
+    output === ''
+    || output.includes('\\')
+    || !output.toLowerCase().endsWith(extension)
+    || segments.some((segment) => segment === '' || segment === '.' || segment === '..')
   ) {
     throw new TypeError(`Browser artifact output must be a safe relative path ending in ${extension}: ${output}`);
   }
@@ -124,13 +125,13 @@ function validateOutput(output: string, extension: '.pdf' | '.png'): void {
 
 function validateSize(size: BrowserArtifactSize): void {
   if (
-    !Number.isSafeInteger(size.width) ||
-    !Number.isSafeInteger(size.height) ||
-    size.width <= 0 ||
-    size.height <= 0 ||
-    size.width > maximumDimension ||
-    size.height > maximumDimension ||
-    size.width * size.height > maximumPixels
+    !Number.isSafeInteger(size.width)
+    || !Number.isSafeInteger(size.height)
+    || size.width <= 0
+    || size.height <= 0
+    || size.width > maximumDimension
+    || size.height > maximumDimension
+    || size.width * size.height > maximumPixels
   ) {
     throw new RangeError(
       `Browser artifact dimensions are invalid or exceed the safety limit: ${String(size.width)}x${String(size.height)}`,
@@ -156,6 +157,7 @@ function findOrCreateRoot(): HTMLElement {
   }
 
   const root = document.createElement('div');
+
   root.setAttribute('data-browser-artifact-root', '');
   document.body.append(root);
 

@@ -25,9 +25,11 @@ export class BrowserArtifactSocialCardElement extends HTMLElement {
     super();
 
     const document = this.ownerDocument;
+
     const root = this.attachShadow({
       mode: 'open',
     });
+
     const content = document.createElement('div');
 
     this.#imageElement = document.createElement('img');
