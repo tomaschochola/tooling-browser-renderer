@@ -33,7 +33,7 @@ Options:
 `;
 
 function parseTimeout(value) {
-  if (!(/^[1-9]\d*$/u).test(value)) {
+  if (!/^[1-9]\d*$/u.test(value)) {
     throw new TypeError(`--timeout must be a positive integer: ${value}`);
   }
 
@@ -48,12 +48,12 @@ async function main() {
         default: false,
         type: 'boolean',
       },
-      'entry': {
+      entry: {
         multiple: true,
         short: 'e',
         type: 'string',
       },
-      'help': {
+      help: {
         default: false,
         short: 'h',
         type: 'boolean',
@@ -62,7 +62,7 @@ async function main() {
         default: false,
         type: 'boolean',
       },
-      'output': {
+      output: {
         short: 'o',
         type: 'string',
       },
@@ -70,13 +70,13 @@ async function main() {
         default: process.cwd(),
         type: 'string',
       },
-      'template': {
+      template: {
         type: 'string',
       },
       'temporary-directory': {
         type: 'string',
       },
-      'timeout': {
+      timeout: {
         default: '60000',
         type: 'string',
       },
@@ -100,10 +100,7 @@ async function main() {
 
   await generateBrowserArtifacts({
     allowNetwork: values['allow-network'],
-    entries: [
-      ...(values['no-defaults'] ? [] : browserArtifactDefaults.entries),
-      ...values.entry,
-    ],
+    entries: [...(values['no-defaults'] ? [] : browserArtifactDefaults.entries), ...values.entry],
     outputDirectory: values.output,
     projectDirectory: values['project-directory'],
     ...(values.template === undefined ? {} : { template: values.template }),

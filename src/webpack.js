@@ -14,12 +14,7 @@ import { BabelConfigBuilder } from '@tomaschochola/tooling-babel';
 import { WebpackConfigBuilder } from '@tomaschochola/tooling-webpack';
 import webpack from 'webpack';
 
-function createConfiguration({
-  entries,
-  outputDirectory,
-  projectDirectory,
-  template,
-}) {
+function createConfiguration({ entries, outputDirectory, projectDirectory, template }) {
   const babelConfig = new BabelConfigBuilder({
     mode: 'production',
   })

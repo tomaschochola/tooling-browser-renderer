@@ -24,18 +24,7 @@ export interface BrowserArtifactPdfMargin {
   readonly top?: number | string;
 }
 
-export type BrowserArtifactPdfFormat
-  = | 'A0'
-    | 'A1'
-    | 'A2'
-    | 'A3'
-    | 'A4'
-    | 'A5'
-    | 'A6'
-    | 'Ledger'
-    | 'Legal'
-    | 'Letter'
-    | 'Tabloid';
+export type BrowserArtifactPdfFormat = 'A0' | 'A1' | 'A2' | 'A3' | 'A4' | 'A5' | 'A6' | 'Ledger' | 'Legal' | 'Letter' | 'Tabloid';
 
 export interface BrowserArtifactPdfOptions {
   readonly displayHeaderFooter?: boolean;
@@ -62,18 +51,8 @@ export interface BrowserArtifactPngOptions {
 export type BrowserArtifactCompose = (root: HTMLElement) => Promise<void> | void;
 
 export interface BrowserArtifactDefinitions {
-  readonly pdf: (
-    output: string,
-    viewport: BrowserArtifactSize,
-    compose: BrowserArtifactCompose,
-    options?: BrowserArtifactPdfOptions,
-  ) => void;
-  readonly png: (
-    output: string,
-    size: BrowserArtifactSize,
-    compose: BrowserArtifactCompose,
-    options?: BrowserArtifactPngOptions,
-  ) => void;
+  readonly pdf: (output: string, viewport: BrowserArtifactSize, compose: BrowserArtifactCompose, options?: BrowserArtifactPdfOptions) => void;
+  readonly png: (output: string, size: BrowserArtifactSize, compose: BrowserArtifactCompose, options?: BrowserArtifactPngOptions) => void;
 }
 
 interface BrowserArtifactBase {
@@ -94,9 +73,7 @@ interface BrowserArtifactPng extends BrowserArtifactBase {
 
 type BrowserArtifact = BrowserArtifactPdf | BrowserArtifactPng;
 
-type BrowserArtifactMetadata
-  = | Omit<BrowserArtifactPdf, 'compose'>
-    | Omit<BrowserArtifactPng, 'compose'>;
+type BrowserArtifactMetadata = Omit<BrowserArtifactPdf, 'compose'> | Omit<BrowserArtifactPng, 'compose'>;
 
 interface BrowserArtifactRuntime {
   list: () => readonly BrowserArtifactMetadata[];
@@ -113,29 +90,22 @@ let defined = false;
 function validateOutput(output: string, extension: '.pdf' | '.png'): void {
   const segments = output.split('/');
 
-  if (
-    output === ''
-    || output.includes('\\')
-    || !output.toLowerCase().endsWith(extension)
-    || segments.some((segment) => segment === '' || segment === '.' || segment === '..')
-  ) {
+  if (output === '' || output.includes('\\') || !output.toLowerCase().endsWith(extension) || segments.some((segment) => segment === '' || segment === '.' || segment === '..')) {
     throw new TypeError(`Browser artifact output must be a safe relative path ending in ${extension}: ${output}`);
   }
 }
 
 function validateSize(size: BrowserArtifactSize): void {
   if (
-    !Number.isSafeInteger(size.width)
-    || !Number.isSafeInteger(size.height)
-    || size.width <= 0
-    || size.height <= 0
-    || size.width > maximumDimension
-    || size.height > maximumDimension
-    || size.width * size.height > maximumPixels
+    !Number.isSafeInteger(size.width) ||
+    !Number.isSafeInteger(size.height) ||
+    size.width <= 0 ||
+    size.height <= 0 ||
+    size.width > maximumDimension ||
+    size.height > maximumDimension ||
+    size.width * size.height > maximumPixels
   ) {
-    throw new RangeError(
-      `Browser artifact dimensions are invalid or exceed the safety limit: ${String(size.width)}x${String(size.height)}`,
-    );
+    throw new RangeError(`Browser artifact dimensions are invalid or exceed the safety limit: ${String(size.width)}x${String(size.height)}`);
   }
 }
 
@@ -227,12 +197,7 @@ export function defineBrowserArtifacts(definition: (artifacts: BrowserArtifactDe
   }
 
   const definitions: BrowserArtifactDefinitions = Object.freeze({
-    pdf: (
-      output: string,
-      viewport: BrowserArtifactSize,
-      compose: BrowserArtifactCompose,
-      options: BrowserArtifactPdfOptions = {},
-    ): void => {
+    pdf: (output: string, viewport: BrowserArtifactSize, compose: BrowserArtifactCompose, options: BrowserArtifactPdfOptions = {}): void => {
       validateOutput(output, '.pdf');
       validateSize(viewport);
 
@@ -262,12 +227,7 @@ export function defineBrowserArtifacts(definition: (artifacts: BrowserArtifactDe
         }),
       );
     },
-    png: (
-      output: string,
-      size: BrowserArtifactSize,
-      compose: BrowserArtifactCompose,
-      options: BrowserArtifactPngOptions = {},
-    ): void => {
+    png: (output: string, size: BrowserArtifactSize, compose: BrowserArtifactCompose, options: BrowserArtifactPngOptions = {}): void => {
       validateOutput(output, '.png');
       validateSize(size);
 

@@ -41,12 +41,9 @@ test('exposes concise browser artifact CLI help', async () => {
 });
 
 test('rejects incomplete browser artifact CLI invocations', async () => {
-  await assert.rejects(
-    async () => await execute(process.execPath, [cli, '--entry', './artifact.ts']),
-    {
-      stderr: /--output is required/u,
-    },
-  );
+  await assert.rejects(async () => await execute(process.execPath, [cli, '--entry', './artifact.ts']), {
+    stderr: /--output is required/u,
+  });
 });
 
 test('generates validated PNG and PDF artifacts and replaces stale output', async () => {

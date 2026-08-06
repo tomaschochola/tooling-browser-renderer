@@ -13,17 +13,25 @@
 import { defineBrowserArtifacts } from '../src/browser';
 
 defineBrowserArtifacts(({ pdf, png }) => {
-  png('images/card.png', {
-    height: 32,
-    width: 64,
-  }, (root) => {
-    root.textContent = 'PNG';
-  });
+  png(
+    'images/card.png',
+    {
+      height: 32,
+      width: 64,
+    },
+    (root) => {
+      root.textContent = 'PNG';
+    },
+  );
 
-  pdf('documents/page.pdf', {
-    height: 64,
-    width: 64,
-  }, (root) => {
-    root.textContent = 'PDF';
-  });
+  pdf(
+    'documents/page.pdf',
+    {
+      height: 64,
+      width: 64,
+    },
+    (root) => {
+      root.textContent = 'PDF';
+    },
+  );
 });

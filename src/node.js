@@ -27,30 +27,11 @@ const maximumDimension = 16_384;
 const maximumPixels = 100_000_000;
 const maximumTimeout = 10 * 60 * 1000;
 
-const pdfBooleanProperties = [
-  'displayHeaderFooter',
-  'landscape',
-  'outline',
-  'preferCSSPageSize',
-  'printBackground',
-  'tagged',
-];
+const pdfBooleanProperties = ['displayHeaderFooter', 'landscape', 'outline', 'preferCSSPageSize', 'printBackground', 'tagged'];
 
 const pdfEndMarker = Buffer.from('%%EOF');
 
-const pdfFormats = new Set([
-  'A0',
-  'A1',
-  'A2',
-  'A3',
-  'A4',
-  'A5',
-  'A6',
-  'Ledger',
-  'Legal',
-  'Letter',
-  'Tabloid',
-]);
+const pdfFormats = new Set(['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'Ledger', 'Legal', 'Letter', 'Tabloid']);
 
 const pdfSignature = Buffer.from('%PDF-');
 const pdfStringProperties = ['footerTemplate', 'format', 'headerTemplate', 'pageRanges'];
@@ -123,35 +104,29 @@ function validateTimeout(timeout) {
 function validateOutput(output, extension) {
   const segments = output.split('/');
 
-  if (
-    output === ''
-    || output.includes('\\')
-    || !output.toLowerCase().endsWith(extension)
-    || segments.some((segment) => segment === '' || segment === '.' || segment === '..')
-  ) {
+  if (output === '' || output.includes('\\') || !output.toLowerCase().endsWith(extension) || segments.some((segment) => segment === '' || segment === '.' || segment === '..')) {
     throw new TypeError(`Browser artifact output must be a safe relative path ending in ${extension}: ${output}`);
   }
 }
 
 function validateSize(size) {
   if (
-    size === null
-    || typeof size !== 'object'
-    || !Number.isSafeInteger(size.width)
-    || !Number.isSafeInteger(size.height)
-    || size.width <= 0
-    || size.height <= 0
-    || size.width > maximumDimension
-    || size.height > maximumDimension
-    || size.width * size.height > maximumPixels
+    size === null ||
+    typeof size !== 'object' ||
+    !Number.isSafeInteger(size.width) ||
+    !Number.isSafeInteger(size.height) ||
+    size.width <= 0 ||
+    size.height <= 0 ||
+    size.width > maximumDimension ||
+    size.height > maximumDimension ||
+    size.width * size.height > maximumPixels
   ) {
     throw new RangeError(`Browser artifact dimensions are invalid or exceed the safety limit: ${String(size)}`);
   }
 }
 
 function validatePdfDimension(value, label, allowZero = false) {
-  const validNumber
-    = typeof value === 'number' && Number.isFinite(value) && (allowZero ? value >= 0 : value > 0);
+  const validNumber = typeof value === 'number' && Number.isFinite(value) && (allowZero ? value >= 0 : value > 0);
 
   const validString = typeof value === 'string' && value !== '' && value.length <= 100;
 
@@ -287,9 +262,7 @@ function sanitizePdfOptions(options, viewport) {
   assignOptionalProperties(options, sanitized, ['height', 'width'], (source, property) => {
     const value = source[property];
 
-    return value === undefined
-      ? undefined
-      : validatePdfDimension(value, `PDF option "${property}"`);
+    return value === undefined ? undefined : validatePdfDimension(value, `PDF option "${property}"`);
   });
 
   sanitizePdfFormat(sanitized.format);
@@ -339,11 +312,7 @@ function validateMetadata(metadata) {
   const outputs = new Set();
 
   return metadata.map((artifact) => {
-    if (
-      artifact === null
-      || typeof artifact !== 'object'
-      || (artifact.type !== 'pdf' && artifact.type !== 'png')
-    ) {
+    if (artifact === null || typeof artifact !== 'object' || (artifact.type !== 'pdf' && artifact.type !== 'png')) {
       throw new TypeError('The browser entry returned invalid artifact metadata.');
     }
 
@@ -387,18 +356,12 @@ function validatePng(buffer, size, output) {
   const actualHeight = buffer.readUInt32BE(20);
 
   if (actualWidth !== size.width || actualHeight !== size.height) {
-    throw new Error(
-      `Chromium returned an unexpected PNG size for ${output}: ${String(actualWidth)}x${String(actualHeight)}, expected ${String(size.width)}x${String(size.height)}`,
-    );
+    throw new Error(`Chromium returned an unexpected PNG size for ${output}: ${String(actualWidth)}x${String(actualHeight)}, expected ${String(size.width)}x${String(size.height)}`);
   }
 }
 
 function validatePdf(buffer, output) {
-  if (
-    buffer.length < 10
-    || !buffer.subarray(0, pdfSignature.length).equals(pdfSignature)
-    || !buffer.subarray(Math.max(0, buffer.length - 1024)).includes(pdfEndMarker)
-  ) {
+  if (buffer.length < 10 || !buffer.subarray(0, pdfSignature.length).equals(pdfSignature) || !buffer.subarray(Math.max(0, buffer.length - 1024)).includes(pdfEndMarker)) {
     throw new Error(`Chromium returned an invalid PDF: ${output}`);
   }
 }
@@ -491,8 +454,7 @@ async function collectBrokenImages(page) {
     await Promise.all(
       collectImages().map(async (image) => {
         if (!image.complete) {
-          await image.decode().catch(() => {
-          });
+          await image.decode().catch(() => {});
         }
       }),
     );
@@ -521,10 +483,7 @@ async function waitForReady(page, timeout) {
   let brokenImages;
 
   try {
-    brokenImages = await Promise.race([
-      collectBrokenImages(page),
-      timeoutPromise,
-    ]);
+    brokenImages = await Promise.race([collectBrokenImages(page), timeoutPromise]);
   } finally {
     if (timeoutId !== undefined) {
       clearTimeout(timeoutId);
@@ -615,10 +574,9 @@ async function publishDirectory(sourceDirectory, outputDirectory, rootDirectory)
         try {
           await rename(backupDirectory, outputDirectory);
         } catch (restoreError) {
-          throw new AggregateError(
-            [publishError, restoreError],
-            `Unable to publish browser artifacts or restore the previous output. Recovery copy: ${backupDirectory}`,
-          );
+          throw new AggregateError([publishError], `Unable to publish browser artifacts or restore the previous output. Recovery copy: ${backupDirectory}`, {
+            cause: restoreError,
+          });
         }
       }
 
@@ -689,10 +647,16 @@ export async function generateBrowserArtifacts({
 
     browser = await chromium.launch();
 
-    const discovery = await openPage(browser, source, {
-      height: 1,
-      width: 1,
-    }, allowNetwork, timeout);
+    const discovery = await openPage(
+      browser,
+      source,
+      {
+        height: 1,
+        width: 1,
+      },
+      allowNetwork,
+      timeout,
+    );
 
     let metadata;
 

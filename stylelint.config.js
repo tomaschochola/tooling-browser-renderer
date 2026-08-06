@@ -12,6 +12,4 @@
 
 import { StylelintConfigBuilder } from '@tomaschochola/tooling-stylelint';
 
-export default new StylelintConfigBuilder()
-  .addStandardScssConfig()
-  .toConfig();
+export default new StylelintConfigBuilder().addStandardScssConfig().toConfig();
