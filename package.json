@@ -19,31 +19,20 @@
     }
   ],
   "dependencies": {
+    "@babel/core": "^8.0.1",
     "@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",
-    "css-minimizer-webpack-plugin": "^8.0.0",
-    "html-loader": "^5.1.0",
-    "html-minimizer-webpack-plugin": "^6.0.0",
-    "html-webpack-plugin": "^5.6.8",
-    "image-minimizer-webpack-plugin": "^5.0.0",
-    "json-minimizer-webpack-plugin": "^5.0.1",
+    "@tomaschochola/tooling-babel": "github:tomaschochola/tooling-babel#main",
+    "@tomaschochola/tooling-webpack": "github:tomaschochola/tooling-webpack#main",
     "playwright": "1.62.1",
-    "postcss-loader": "^8.2.1",
-    "sass-embedded": "^1.100.0",
-    "sass-loader": "^17.0.0",
-    "sharp": "^0.35.3",
-    "svgo": "^4.0.2",
-    "terser-webpack-plugin": "^5.6.1",
-    "ts-loader": "^9.6.2",
-    "typescript": "^6.0.3",
     "webpack": "^5.109.2"
   },
   "description": "Deterministic browser artifact generation for screenshots, social cards, and PDF documents.",
   "devDependencies": {
-    "@tomaschochola/tooling-eslint": "github:tomaschochola/tooling-eslint#2.x",
-    "@tomaschochola/tooling-prettier": "github:tomaschochola/tooling-prettier#2.x",
-    "@tomaschochola/tooling-stylelint": "github:tomaschochola/tooling-stylelint#2.x",
-    "@tomaschochola/tooling-trimmer": "github:tomaschochola/tooling-trimmer#2.x",
-    "@tomaschochola/tooling-typescript": "github:tomaschochola/tooling-typescript#2.x"
+    "@tomaschochola/tooling-eslint": "github:tomaschochola/tooling-eslint#main",
+    "@tomaschochola/tooling-prettier": "github:tomaschochola/tooling-prettier#main",
+    "@tomaschochola/tooling-stylelint": "github:tomaschochola/tooling-stylelint#main",
+    "@tomaschochola/tooling-trimmer": "github:tomaschochola/tooling-trimmer#main",
+    "@tomaschochola/tooling-typescript": "github:tomaschochola/tooling-typescript#main"
   },
   "exports": {
     ".": {
@@ -84,5 +73,5 @@
   },
   "type": "module",
   "types": "./src/index.d.ts",
-  "version": "2.0.0"
+  "version": "0.0.0"
 }
