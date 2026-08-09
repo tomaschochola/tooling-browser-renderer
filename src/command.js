@@ -27,7 +27,7 @@ export async function executeCli(arguments_, streams, generate = generateBrowser
 
     return 0;
   } catch (error) {
-    streams.stderr.write(`tooling-browser-artifacts: ${error instanceof Error ? error.message : String(error)}\n`);
+    streams.stderr.write(`tooling-browser-renderer: ${error instanceof Error ? error.message : String(error)}\n`);
 
     return 1;
   }

@@ -78,7 +78,7 @@ test('reports argument and generator failures without a stack trace', async () =
   const nonError = createStreams();
 
   assert.equal(await executeCli([], invalid.streams), 1);
-  assert.match(invalid.output.stderr, /^tooling-browser-artifacts: Expected a command/u);
+  assert.match(invalid.output.stderr, /^tooling-browser-renderer: Expected a command/u);
 
   assert.equal(
     await executeCli(['png', 'card.png', '--entry', './card.js', '--width', '64', '--height', '32'], failed.streams, async () => {
@@ -86,7 +86,7 @@ test('reports argument and generator failures without a stack trace', async () =
     }),
     1,
   );
-  assert.equal(failed.output.stderr, 'tooling-browser-artifacts: generation failed\n');
+  assert.equal(failed.output.stderr, 'tooling-browser-renderer: generation failed\n');
 
   assert.equal(
     await executeCli(['png', 'card.png', '--entry', './card.js', '--width', '64', '--height', '32'], nonError.streams, async () => {
@@ -94,5 +94,5 @@ test('reports argument and generator failures without a stack trace', async () =
     }),
     1,
   );
-  assert.equal(nonError.output.stderr, 'tooling-browser-artifacts: non-error\n');
+  assert.equal(nonError.output.stderr, 'tooling-browser-renderer: non-error\n');
 });

@@ -5,11 +5,11 @@
     "url": "https://github.com/tomaschochola"
   },
   "bin": {
-    "tooling-browser-artifacts": "src/cli.js"
+    "tooling-browser-renderer": "src/cli.js"
   },
   "bugs": {
     "email": "tomaschochola@tomaschochola.cz",
-    "url": "https://github.com/tomaschochola/tooling-browser-artifacts/issues"
+    "url": "https://github.com/tomaschochola/tooling-browser-renderer/issues"
   },
   "contributors": [
     {
@@ -26,7 +26,7 @@
     "playwright": "1.62.1",
     "webpack": "^5.109.2"
   },
-  "description": "Deterministic browser artifact generation for screenshots, social cards, and PDF documents.",
+  "description": "Deterministic browser rendering for screenshots, social cards, and PDF documents.",
   "devDependencies": {
     "@tomaschochola/tooling-eslint": "github:tomaschochola/tooling-eslint#main",
     "@tomaschochola/tooling-prettier": "github:tomaschochola/tooling-prettier#main",
@@ -44,20 +44,20 @@
     "type": "github",
     "url": "https://github.com/sponsors/tomaschochola"
   },
-  "homepage": "https://github.com/tomaschochola/tooling-browser-artifacts",
+  "homepage": "https://github.com/tomaschochola/tooling-browser-renderer",
   "keywords": [
     "tomaschochola",
     "TomasChochola",
     "Tomas Chochola",
     "Tomáš Chochola",
-    "tooling-browser-artifacts"
+    "tooling-browser-renderer"
   ],
   "license": "CC-BY-ND-4.0",
-  "name": "@tomaschochola/tooling-browser-artifacts",
+  "name": "@tomaschochola/tooling-browser-renderer",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tomaschochola/tooling-browser-artifacts.git"
+    "url": "git+https://github.com/tomaschochola/tooling-browser-renderer.git"
   },
   "type": "module",
   "version": "0.0.0"

@@ -23,8 +23,8 @@ const pdfOptions = new Set([...commonOptions, 'css-page-size', 'format', 'landsc
 const pngOptions = new Set([...commonOptions, 'height', 'pixel-ratio', 'transparent', 'width']);
 
 export const help = `Usage:
-  tooling-browser-artifacts png OUTPUT --entry REQUEST [OPTIONS]
-  tooling-browser-artifacts pdf OUTPUT --entry REQUEST [OPTIONS]
+  tooling-browser-renderer png OUTPUT --entry REQUEST [OPTIONS]
+  tooling-browser-renderer pdf OUTPUT --entry REQUEST [OPTIONS]
 
 Build Webpack entries and render one deterministic browser artifact.
 Entries execute in the supplied order. Named inputs are exposed on globalThis.browserArtifact.

@@ -159,7 +159,7 @@ function createBrowser(configuration = {}) {
 }
 
 async function createProject() {
-  const directory = await mkdtemp(join(tmpdir(), 'tooling-browser-artifacts-test-'));
+  const directory = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-test-'));
   const entry = join(directory, 'artifact.js');
 
   await writeFile(entry, 'document.body.textContent = "artifact";\n');
@@ -271,7 +271,7 @@ test('builds and atomically publishes an exact PNG without deleting siblings', a
 
 test('routes assets and plain-text data through a generated Webpack bootstrap', async () => {
   const project = await createProject();
-  const externalDirectory = await mkdtemp(join(tmpdir(), 'tooling-browser-artifacts-external-test-'));
+  const externalDirectory = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-external-test-'));
   const browser = createBrowser();
   const observations = browser.observations;
   const asset = join(externalDirectory, 'logo.svg');

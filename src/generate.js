@@ -373,7 +373,7 @@ export async function generateBrowserArtifact(options, dependencies = {}) {
   assertOutputExtension(output, options.type);
   const assets = await resolveAssets(options.assets ?? {}, projectDirectory);
 
-  const workDirectory = await mkdtemp(join(tmpdir(), 'tooling-browser-artifacts-'));
+  const workDirectory = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-'));
   const buildDirectory = join(workDirectory, 'build');
 
   let browser;

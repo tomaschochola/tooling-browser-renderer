@@ -15,8 +15,8 @@ import test from 'node:test';
 import { help, parseArguments } from '../src/options.js';
 
 test('describes both explicit artifact commands and the public input model', () => {
-  assert.match(help, /tooling-browser-artifacts png OUTPUT --entry REQUEST/u);
-  assert.match(help, /tooling-browser-artifacts pdf OUTPUT --entry REQUEST/u);
+  assert.match(help, /tooling-browser-renderer png OUTPUT --entry REQUEST/u);
+  assert.match(help, /tooling-browser-renderer pdf OUTPUT --entry REQUEST/u);
   assert.match(help, /Entries execute in the supplied order/u);
   assert.match(help, /globalThis\.browserArtifact/u);
   assert.match(help, /--data NAME=VALUE/u);

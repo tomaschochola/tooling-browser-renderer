@@ -27,7 +27,7 @@ const packageRoot = fileURLToPath(new URL('..', import.meta.url));
 const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 test('renders optimized HTML, JavaScript, SCSS, PNG, and PDF through the public CLI', async () => {
-  const project = await mkdtemp(join(tmpdir(), 'tooling-browser-artifacts-integration-'));
+  const project = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-integration-'));
 
   try {
     await writeFile(
@@ -96,7 +96,7 @@ document.body.replaceChildren(heading);
 });
 
 test('renders the extensible Open Graph product from named assets and plain-text data', async () => {
-  const project = await mkdtemp(join(tmpdir(), 'tooling-browser-artifacts-open-graph-'));
+  const project = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-open-graph-'));
 
   try {
     await writeFile(
@@ -275,11 +275,11 @@ globalThis.browserArtifact.ready = productReady.then(() => {
     const packageScope = join(project, 'node_modules/@tomaschochola');
 
     await mkdir(packageScope, { recursive: true });
-    await symlink(packageRoot, join(packageScope, 'tooling-browser-artifacts'), 'dir');
+    await symlink(packageRoot, join(packageScope, 'tooling-browser-renderer'), 'dir');
 
     await execute(
       process.execPath,
-      [cli, 'png', 'generated/logo-only.png', '--entry', '@tomaschochola/tooling-browser-artifacts/products/open-graph', '--asset', 'image=logo.svg', '--width', '1200', '--height', '630'],
+      [cli, 'png', 'generated/logo-only.png', '--entry', '@tomaschochola/tooling-browser-renderer/products/open-graph', '--asset', 'image=logo.svg', '--width', '1200', '--height', '630'],
       { cwd: project },
     );
     await execute(
@@ -289,7 +289,7 @@ globalThis.browserArtifact.ready = productReady.then(() => {
         'png',
         'generated/three-lines.png',
         '--entry',
-        '@tomaschochola/tooling-browser-artifacts/products/open-graph',
+        '@tomaschochola/tooling-browser-renderer/products/open-graph',
         '--entry',
         './open-graph.css',
         '--entry',
@@ -320,7 +320,7 @@ globalThis.browserArtifact.ready = productReady.then(() => {
         'png',
         'generated/auto.png',
         '--entry',
-        '@tomaschochola/tooling-browser-artifacts/products/open-graph',
+        '@tomaschochola/tooling-browser-renderer/products/open-graph',
         '--entry',
         './open-graph.css',
         '--entry',
@@ -345,7 +345,7 @@ globalThis.browserArtifact.ready = productReady.then(() => {
         'png',
         'generated/auto-long.png',
         '--entry',
-        '@tomaschochola/tooling-browser-artifacts/products/open-graph',
+        '@tomaschochola/tooling-browser-renderer/products/open-graph',
         '--entry',
         './open-graph.css',
         '--entry',
@@ -370,7 +370,7 @@ globalThis.browserArtifact.ready = productReady.then(() => {
         'png',
         'generated/auto-three-rows.png',
         '--entry',
-        '@tomaschochola/tooling-browser-artifacts/products/open-graph',
+        '@tomaschochola/tooling-browser-renderer/products/open-graph',
         '--entry',
         './open-graph.css',
         '--entry',
