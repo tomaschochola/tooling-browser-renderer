@@ -1,0 +1,130 @@
+/**
+ * @file
+ * @author Tomáš Chochola <tomaschochola@tomaschochola.cz>
+ * @copyright © 2026 Tomáš Chochola <tomaschochola@tomaschochola.cz>
+ *
+ * @license CC-BY-ND-4.0
+ *
+ * @see {@link https://creativecommons.org/licenses/by-nd/4.0/} License
+ * @see {@link https://github.com/tomaschochola} GitHub Profile
+ * @see {@link https://github.com/sponsors/tomaschochola} GitHub Sponsors
+ */
+
+:root {
+  color-scheme: only light;
+}
+
+html,
+body {
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+.open-graph {
+  align-items: center;
+  background: #fff;
+  block-size: 100%;
+  box-sizing: border-box;
+  display: flex;
+  inline-size: 100%;
+  justify-content: center;
+  padding: 10vmin;
+}
+
+.open-graph-envelope {
+  align-items: center;
+  block-size: 50vmin;
+  display: flex;
+  inline-size: 100%;
+  justify-content: center;
+}
+
+.open-graph-content {
+  align-items: center;
+  display: flex;
+  font-family: 'Inter Tight Variable', sans-serif;
+  font-size: 15.5vmin;
+  font-synthesis: none;
+  font-weight: 900;
+  gap: 5vmin;
+  justify-content: center;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.open-graph-image {
+  block-size: 50vmin;
+  display: block;
+  flex: none;
+  inline-size: 50vmin;
+  object-fit: contain;
+}
+
+.open-graph-text {
+  color: #101114;
+  display: grid;
+  row-gap: calc(1lh - 1cap);
+}
+
+.open-graph-text:empty {
+  display: none;
+}
+
+.open-graph-line {
+  text-box-edge: cap alphabetic;
+  text-box-trim: trim-both;
+  white-space: nowrap;
+}
+
+:where(.open-graph[data-open-graph-line-count='1']) .open-graph-content {
+  font-size: 18vmin;
+}
+
+:where(.open-graph[data-open-graph-line-count='2']) .open-graph-content {
+  font-size: 16.5vmin;
+}
+
+:where(.open-graph:not([data-open-graph-line-count='0'])[data-open-graph-image-rows='1']) .open-graph-image {
+  block-size: 1cap;
+  inline-size: 1cap;
+}
+
+:where(.open-graph:not([data-open-graph-line-count='0'])[data-open-graph-image-rows='2']) .open-graph-image {
+  block-size: calc(1cap + 1lh);
+  inline-size: calc(1cap + 1lh);
+}
+
+:where(.open-graph:not([data-open-graph-line-count='0'])[data-open-graph-image-rows='3']) .open-graph-image {
+  block-size: calc(1cap + 2lh);
+  inline-size: calc(1cap + 2lh);
+}
+
+:where(.open-graph[data-open-graph-text-position='left']) .open-graph-content {
+  flex-direction: row-reverse;
+}
+
+:where(.open-graph[data-open-graph-text-position='left']) .open-graph-text {
+  text-align: end;
+}
+
+:where(.open-graph[data-open-graph-text-position='top']) .open-graph-content {
+  flex-direction: column-reverse;
+}
+
+:where(.open-graph[data-open-graph-text-position='bottom']) .open-graph-content {
+  flex-direction: column;
+}
+
+:where(.open-graph[data-open-graph-text-position='bottom'], .open-graph[data-open-graph-text-position='top']) .open-graph-text {
+  text-align: center;
+}
+
+:where(.open-graph:not([data-open-graph-line-count='0'])[data-open-graph-text-position='left'], .open-graph:not([data-open-graph-line-count='0'])[data-open-graph-text-position='right'])
+  .open-graph-image {
+  align-self: flex-start;
+}

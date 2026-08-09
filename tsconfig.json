@@ -1,4 +1,0 @@
-{
-  "extends": "@tomaschochola/tooling-typescript/src/browser_webpack.json",
-  "include": ["./src/**/*", "./tests/**/*.ts"]
-}

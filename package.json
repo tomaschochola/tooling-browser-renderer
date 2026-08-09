@@ -5,7 +5,7 @@
     "url": "https://github.com/tomaschochola"
   },
   "bin": {
-    "browser-artifacts": "src/cli.js"
+    "tooling-browser-artifacts": "src/cli.js"
   },
   "bugs": {
     "email": "tomaschochola@tomaschochola.cz",
@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "@babel/core": "^8.0.1",
-    "@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",
+    "@fontsource-variable/inter-tight": "^5.3.0",
     "@tomaschochola/tooling-babel": "github:tomaschochola/tooling-babel#main",
     "@tomaschochola/tooling-webpack": "github:tomaschochola/tooling-webpack#main",
     "playwright": "1.62.1",
@@ -31,24 +31,13 @@
     "@tomaschochola/tooling-eslint": "github:tomaschochola/tooling-eslint#main",
     "@tomaschochola/tooling-prettier": "github:tomaschochola/tooling-prettier#main",
     "@tomaschochola/tooling-stylelint": "github:tomaschochola/tooling-stylelint#main",
-    "@tomaschochola/tooling-trimmer": "github:tomaschochola/tooling-trimmer#main",
-    "@tomaschochola/tooling-typescript": "github:tomaschochola/tooling-typescript#main"
+    "@tomaschochola/tooling-trimmer": "github:tomaschochola/tooling-trimmer#main"
   },
   "exports": {
-    ".": {
-      "types": "./src/index.d.ts",
-      "default": "./src/index.js"
-    },
-    "./browser": {
-      "types": "./src/browser.ts",
-      "default": "./src/browser.ts"
-    },
-    "./node": {
-      "types": "./src/index.d.ts",
-      "default": "./src/index.js"
-    }
+    "./products/open-graph": "./products/open-graph/index.js"
   },
   "files": [
+    "products",
     "src"
   ],
   "funding": {
@@ -64,7 +53,6 @@
     "tooling-browser-artifacts"
   ],
   "license": "CC-BY-ND-4.0",
-  "main": "./src/index.js",
   "name": "@tomaschochola/tooling-browser-artifacts",
   "private": true,
   "repository": {
@@ -72,6 +60,5 @@
     "url": "git+https://github.com/tomaschochola/tooling-browser-artifacts.git"
   },
   "type": "module",
-  "types": "./src/index.d.ts",
   "version": "0.0.0"
 }

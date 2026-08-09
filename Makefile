@@ -34,13 +34,10 @@ DEVCONTAINER_FILTER := label=devcontainer.local_folder=$(CURDIR)
 fix: eslint_fix stylelint_fix prettier_fix trimmer_fix
 
 .PHONY: check
-check: trimmer_check lint static test audit
+check: trimmer_check lint test audit
 
 .PHONY: lint
 lint: eslint_check prettier_check stylelint_check
-
-.PHONY: static
-static: typescript_check
 
 .PHONY: test
 test: node_test playwright_check
@@ -96,13 +93,9 @@ prettier_check: ./node_modules/.package-lock.json ./package.json ./package-lock.
 stylelint_check: ./node_modules/.package-lock.json ./package.json ./package-lock.json ./stylelint.config.js
 	npm exec --ignore-scripts -- stylelint --ignore-path ./.gitignore --allow-empty-input './**/*.{sass,scss,css}'
 
-.PHONY: typescript_check
-typescript_check: ./node_modules/.package-lock.json ./package.json ./package-lock.json ./tsconfig.json
-	npm exec --ignore-scripts -- tsc --noEmit --project ./tsconfig.json
-
 .PHONY: node_test
 node_test: ./node_modules/.package-lock.json ./package.json ./package-lock.json
-	node --test
+	node --test --experimental-test-coverage --test-coverage-include='src/**/*.js' --test-coverage-exclude='src/cli.js' --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100
 
 .PHONY: playwright_check
 playwright_check: ./node_modules/.package-lock.json ./package.json ./package-lock.json

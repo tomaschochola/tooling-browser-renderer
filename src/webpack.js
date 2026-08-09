@@ -14,8 +14,8 @@ import { BabelConfigBuilder } from '@tomaschochola/tooling-babel';
 import { WebpackConfigBuilder } from '@tomaschochola/tooling-webpack';
 import webpack from 'webpack';
 
-function createConfiguration({ entries, outputDirectory, projectDirectory, template }) {
-  const babelConfig = new BabelConfigBuilder({
+export function createWebpackConfiguration({ entries, outputDirectory, projectDirectory, template }) {
+  const babel = new BabelConfigBuilder({
     mode: 'production',
   })
     .addPresetTypeScript()
@@ -30,22 +30,18 @@ function createConfiguration({ entries, outputDirectory, projectDirectory, templ
     .setContext(projectDirectory)
     .setDevtool(false)
     .setTarget(['web', 'es2025'])
-    .setEntries({
-      'browser-artifacts': entries,
-    })
+    .setEntries({ 'browser-artifact': entries })
     .setOutputPath(outputDirectory)
     .setPublicPath('./')
     .addBabelLoader({
-      ...babelConfig,
+      ...babel,
       babelrc: false,
       configFile: false,
     })
     .addStyleLoaders()
     .addHtmlLoader()
     .addAssetQueryRules()
-    .addHtmlPlugin({
-      template,
-    })
+    .addHtmlPlugin({ template })
     .setEcmaVersion(2025)
     .addTerserMinimizer()
     .addCssMinimizer()
@@ -55,41 +51,49 @@ function createConfiguration({ entries, outputDirectory, projectDirectory, templ
     .toConfig();
 }
 
-export async function compileBrowserEntries(options) {
-  const compiler = webpack(createConfiguration(options));
+function runCompiler(compiler) {
+  return new Promise((resolvePromise, rejectPromise) => {
+    compiler.run((error, statistics) => {
+      if (error !== null && error !== undefined) {
+        rejectPromise(error);
+
+        return;
+      }
+
+      if (statistics === undefined) {
+        rejectPromise(new Error('Webpack completed without build statistics.'));
+
+        return;
+      }
+
+      resolvePromise(statistics);
+    });
+  });
+}
+
+function closeCompiler(compiler) {
+  return new Promise((resolvePromise, rejectPromise) => {
+    compiler.close((error) => {
+      if (error !== null && error !== undefined) {
+        rejectPromise(error);
+
+        return;
+      }
+
+      resolvePromise();
+    });
+  });
+}
+
+export async function compileBrowserPage(options, createCompiler = webpack) {
+  const compiler = createCompiler(createWebpackConfiguration(options));
 
   let statistics;
 
   try {
-    statistics = await new Promise((resolvePromise, rejectPromise) => {
-      compiler.run((error, result) => {
-        if (error !== null && error !== undefined) {
-          rejectPromise(error);
-
-          return;
-        }
-
-        if (result === undefined) {
-          rejectPromise(new Error('Webpack completed without build statistics.'));
-
-          return;
-        }
-
-        resolvePromise(result);
-      });
-    });
+    statistics = await runCompiler(compiler);
   } finally {
-    await new Promise((resolvePromise, rejectPromise) => {
-      compiler.close((error) => {
-        if (error !== null && error !== undefined) {
-          rejectPromise(error);
-
-          return;
-        }
-
-        resolvePromise();
-      });
-    });
+    await closeCompiler(compiler);
   }
 
   const hasErrors = statistics.hasErrors();
