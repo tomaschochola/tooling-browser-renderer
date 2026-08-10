@@ -7,6 +7,11 @@ USER root
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes --no-install-recommends \
     && DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends make sudo \
+    && install --directory --owner ubuntu --group ubuntu \
+        /home/ubuntu/.local \
+        /home/ubuntu/.local/bin \
+        /home/ubuntu/.local/lib \
+        /home/ubuntu/.local/lib/node_modules \
     && printf '%s\n' 'ubuntu ALL=(root) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu \
     && chmod 0440 /etc/sudoers.d/ubuntu \
     && rm -rf /var/lib/apt/lists/*
