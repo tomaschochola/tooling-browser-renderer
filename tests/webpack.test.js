@@ -33,9 +33,15 @@ test('creates the optimized framework-neutral browser build', () => {
   });
   assert.equal(configuration.output.path, '/temporary/build');
   assert.equal(configuration.output.publicPath, './');
-  assert.equal(configuration.optimization.minimizer.length, 5);
-  assert.equal(configuration.plugins.length, 1);
-  assert.equal(configuration.module.rules.length, 7);
+  assert.deepEqual(
+    configuration.optimization.minimizer.map(({ constructor }) => constructor.name),
+    ['TerserPlugin', 'CssMinimizerPlugin', 'HtmlMinimizerPlugin', 'JsonMinimizerPlugin'],
+  );
+  assert.deepEqual(
+    configuration.plugins.map(({ constructor }) => constructor.name),
+    ['HtmlWebpackPlugin', 'ImageMinimizerPlugin'],
+  );
+  assert.equal(configuration.module.rules.length, 8);
 });
 
 function createCompiler({ closeError, runError, statistics }) {
