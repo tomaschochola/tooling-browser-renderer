@@ -123,16 +123,31 @@ ${dataProperties.join('\n')}
 `;
 }
 
-function collectPageFailures(page, failures) {
+function monitorPageFailures(page) {
+  const failures = [];
+  let reportFirstFailure;
+  const firstFailure = new Promise((resolvePromise) => {
+    reportFirstFailure = resolvePromise;
+  });
+  const report = (failure) => {
+    failures.push(failure);
+    reportFirstFailure();
+  };
+
   page.on('crash', () => {
-    failures.push('page: Chromium page crashed');
+    report('page: Chromium page crashed');
   });
   page.on('pageerror', (error) => {
-    failures.push(`page: ${error.stack ?? error.message}`);
+    report(`page: ${error.stack ?? error.message}`);
   });
   page.on('requestfailed', (request) => {
-    failures.push(`request: ${request.url()} (${request.failure()?.errorText ?? 'unknown failure'})`);
+    report(`request: ${request.url()} (${request.failure()?.errorText ?? 'unknown failure'})`);
   });
+
+  return {
+    failures,
+    firstFailure,
+  };
 }
 
 async function configureNetworkAccess(page, allowNetwork) {
@@ -184,26 +199,39 @@ export async function inspectBrowserResources() {
     .map((image) => image.currentSrc || image.src || '<missing src>');
 }
 
-async function inspectResources(page) {
-  return await page.evaluate(inspectBrowserResources);
+async function evaluateBrowserFrames(page, operation) {
+  const evaluations = [];
+
+  for (const frame of page.frames()) {
+    evaluations.push(frame.evaluate(operation));
+  }
+
+  return await Promise.all(evaluations);
 }
 
-async function waitForResources(page, timeout) {
+async function waitForBrowserOperation(operation, timeout, timeoutMessage) {
   let timeoutId;
 
   const timeoutPromise = new Promise((resolvePromise, rejectPromise) => {
     timeoutId = setTimeout(() => {
-      rejectPromise(new Error(`Browser artifact resources did not become ready within ${String(timeout)} ms.`));
+      rejectPromise(new Error(`${timeoutMessage} within ${String(timeout)} ms.`));
     }, timeout);
   });
 
-  let brokenImages;
-
   try {
-    brokenImages = await Promise.race([inspectResources(page), timeoutPromise]);
+    return await Promise.race([operation, timeoutPromise]);
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+async function evaluateBrowserFramesWithTimeout(page, operation, timeout, timeoutMessage) {
+  return await waitForBrowserOperation(evaluateBrowserFrames(page, operation), timeout, timeoutMessage);
+}
+
+async function waitForResources(page, timeout) {
+  const inspections = await evaluateBrowserFramesWithTimeout(page, inspectBrowserResources, timeout, 'Browser artifact resources did not become ready');
+  const brokenImages = inspections.flat();
 
   if (brokenImages.length > 0) {
     throw new Error(`Browser artifact contains unloaded images:\n${brokenImages.join('\n')}`);
@@ -213,6 +241,83 @@ async function waitForResources(page, timeout) {
 function assertNoPageFailures(failures) {
   if (failures.length > 0) {
     throw new Error(`Browser artifact page failed:\n${failures.join('\n')}`);
+  }
+}
+
+async function failFastOnPageFailure(operation, monitor) {
+  const outcome = await Promise.race([operation.then((value) => ({ type: 'complete', value })), monitor.firstFailure.then(() => ({ type: 'failure' }))]);
+
+  if (outcome.type === 'failure') {
+    assertNoPageFailures(monitor.failures);
+  }
+
+  return outcome.value;
+}
+
+export async function disableBrowserMotion() {
+  const roots = [globalThis.document];
+
+  for (let index = 0; index < roots.length; index += 1) {
+    const root = roots[index];
+    const style = globalThis.document.createElement('style');
+
+    style.textContent = `
+*,
+*::before,
+*::after {
+  animation: none !important;
+  scroll-behavior: auto !important;
+  transition: none !important;
+}
+`;
+
+    if (root === globalThis.document) {
+      (globalThis.document.head ?? globalThis.document.documentElement).append(style);
+    } else {
+      root.append(style);
+    }
+
+    for (const animation of root.getAnimations()) {
+      animation.cancel();
+    }
+
+    for (const element of root.querySelectorAll('*')) {
+      if (element.shadowRoot !== null) {
+        roots.push(element.shadowRoot);
+      }
+    }
+  }
+
+  await new Promise(globalThis.requestAnimationFrame.bind(globalThis));
+  await new Promise(globalThis.requestAnimationFrame.bind(globalThis));
+}
+
+export function inspectActiveBrowserAnimations() {
+  const roots = [globalThis.document];
+  let activeAnimations = 0;
+
+  for (let index = 0; index < roots.length; index += 1) {
+    const root = roots[index];
+
+    for (const animation of root.getAnimations()) {
+      if (animation.playState === 'running' || animation.playState === 'pending') {
+        activeAnimations += 1;
+      }
+    }
+
+    for (const element of root.querySelectorAll('*')) {
+      if (element.shadowRoot !== null) {
+        roots.push(element.shadowRoot);
+      }
+    }
+  }
+
+  return activeAnimations;
+}
+
+function assertNoActiveBrowserAnimations(activeAnimations) {
+  if (activeAnimations > 0) {
+    throw new Error(`Browser artifact contains active animations after motion was disabled: ${String(activeAnimations)}.`);
   }
 }
 
@@ -286,9 +391,16 @@ async function capturePage(page, options) {
 async function renderPage(browser, source, options) {
   const contextOptions = {
     acceptDownloads: false,
+    colorScheme: 'light',
+    locale: 'en-US',
     offline: !options.allowNetwork,
     reducedMotion: 'reduce',
     serviceWorkers: 'block',
+    timezoneId: 'UTC',
+    viewport: {
+      height: 1080,
+      width: 1920,
+    },
   };
 
   if (options.type === 'png') {
@@ -300,7 +412,7 @@ async function renderPage(browser, source, options) {
 
   try {
     const page = await context.newPage();
-    const failures = [];
+    const monitor = monitorPageFailures(page);
 
     page.setDefaultNavigationTimeout(options.timeout);
     page.setDefaultTimeout(options.timeout);
@@ -311,28 +423,55 @@ async function renderPage(browser, source, options) {
       });
     }
 
-    collectPageFailures(page, failures);
     await configureNetworkAccess(page, options.allowNetwork);
-    await page.goto(pathToFileURL(source).href, {
-      timeout: options.timeout,
-      waitUntil: 'load',
-    });
-    await page.waitForLoadState('networkidle', {
-      timeout: options.timeout,
-    });
+    await failFastOnPageFailure(
+      page.goto(pathToFileURL(source).href, {
+        timeout: options.timeout,
+        waitUntil: 'load',
+      }),
+      monitor,
+    );
+    await failFastOnPageFailure(
+      page.waitForLoadState('networkidle', {
+        timeout: options.timeout,
+      }),
+      monitor,
+    );
 
     if (options.waitForSelector !== undefined) {
-      await page.locator(options.waitForSelector).waitFor({
-        state: 'attached',
-      });
+      await failFastOnPageFailure(
+        page.locator(options.waitForSelector).waitFor({
+          state: 'attached',
+        }),
+        monitor,
+      );
     }
 
-    await waitForResources(page, options.timeout);
-    assertNoPageFailures(failures);
+    await failFastOnPageFailure(waitForResources(page, options.timeout), monitor);
 
-    const buffer = await capturePage(page, options);
+    await failFastOnPageFailure(evaluateBrowserFramesWithTimeout(page, disableBrowserMotion, options.timeout, 'Browser artifact motion disabling did not complete'), monitor);
 
-    assertNoPageFailures(failures);
+    const activeAnimationsAfterDisable = await failFastOnPageFailure(
+      evaluateBrowserFramesWithTimeout(page, inspectActiveBrowserAnimations, options.timeout, 'Browser artifact motion inspection did not complete'),
+      monitor,
+    );
+
+    assertNoActiveBrowserAnimations(activeAnimationsAfterDisable.reduce((total, count) => total + count, 0));
+
+    await failFastOnPageFailure(waitForResources(page, options.timeout), monitor);
+
+    const activeAnimationsBeforeCapture = await failFastOnPageFailure(
+      evaluateBrowserFramesWithTimeout(page, inspectActiveBrowserAnimations, options.timeout, 'Browser artifact motion inspection did not complete'),
+      monitor,
+    );
+
+    assertNoActiveBrowserAnimations(activeAnimationsBeforeCapture.reduce((total, count) => total + count, 0));
+
+    assertNoPageFailures(monitor.failures);
+
+    const buffer = await failFastOnPageFailure(capturePage(page, options), monitor);
+
+    assertNoPageFailures(monitor.failures);
 
     return buffer;
   } finally {
@@ -392,7 +531,7 @@ export async function generateBrowserArtifact(options, dependencies = {}) {
       entries,
       outputDirectory: buildDirectory,
       projectDirectory,
-      template: defaultTemplate,
+      template: options.template ?? defaultTemplate,
     });
 
     const source = join(buildDirectory, 'index.html');

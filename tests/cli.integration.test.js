@@ -31,11 +31,32 @@ test('renders optimized HTML, JavaScript, SCSS, PNG, and PDF through the public 
 
   try {
     await writeFile(
+      join(project, 'index.html'),
+      `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Browser artifact</title>
+  </head>
+  <body>
+    <main data-artifact-root></main>
+  </body>
+</html>
+`,
+    );
+    await writeFile(
       join(project, 'artifact.ts'),
-      `const heading: HTMLHeadingElement = document.createElement('h1');
+      `const root: HTMLElement | null = document.querySelector('[data-artifact-root]');
 
-heading.textContent = 'Browser artifact';
-document.body.replaceChildren(heading);
+if (root === null) {
+  throw new Error('The custom HTML template was not used.');
+}
+
+const heading: HTMLHeadingElement = document.createElement('h1');
+const browserArtifact: { data: Record<string, string> } = Reflect.get(globalThis, 'browserArtifact');
+
+heading.textContent = browserArtifact.data.title;
+root.replaceChildren(heading);
 
 requestAnimationFrame(() => {
   if (getComputedStyle(document.body).backgroundColor !== 'rgb(18, 52, 86)') {
@@ -75,7 +96,27 @@ document.body.replaceChildren(heading);
     );
     await execute(
       process.execPath,
-      [cli, 'png', 'generated/card.png', '--entry', './artifact.ts', '--entry', './artifact.scss', '--width', '80', '--height', '40', '--pixel-ratio', '2', '--wait-for-selector', '[data-ready]'],
+      [
+        cli,
+        'png',
+        'generated/card.png',
+        '--template',
+        './index.html',
+        '--entry',
+        './artifact.ts',
+        '--entry',
+        './artifact.scss',
+        '--data',
+        'title=Browser artifact',
+        '--width',
+        '80',
+        '--height',
+        '40',
+        '--pixel-ratio',
+        '2',
+        '--wait-for-selector',
+        '[data-ready]',
+      ],
       { cwd: project },
     );
     await execute(process.execPath, [cli, 'pdf', 'generated/document.pdf', '--entry', './document.js', '--entry', './document.scss', '--css-page-size'], { cwd: project });
@@ -85,6 +126,42 @@ document.body.replaceChildren(heading);
     assert.deepEqual(png.subarray(0, pngSignature.length), pngSignature);
     assert.equal(png.readUInt32BE(16), 160);
     assert.equal(png.readUInt32BE(20), 80);
+    assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
+    assert.equal(pdf.subarray(Math.max(0, pdf.length - 1024)).includes(Buffer.from('%%EOF')), true);
+  } finally {
+    await rm(project, {
+      force: true,
+      recursive: true,
+    });
+  }
+});
+
+test('renders PNG and A4 PDF artifacts from only a custom HTML template', async () => {
+  const project = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-template-only-'));
+
+  try {
+    await writeFile(
+      join(project, 'index.html'),
+      `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Template-only PDF</title>
+  </head>
+  <body>
+    <main data-ready>Template-only PDF</main>
+  </body>
+</html>
+`,
+    );
+    await execute(process.execPath, [cli, 'png', 'generated/card.png', '--template', './index.html', '--width', '80', '--height', '40', '--wait-for-selector', '[data-ready]'], { cwd: project });
+    await execute(process.execPath, [cli, 'pdf', 'generated/document.pdf', '--template', './index.html', '--format', 'A4', '--wait-for-selector', '[data-ready]'], { cwd: project });
+    const png = await readFile(join(project, 'generated/card.png'));
+    const pdf = await readFile(join(project, 'generated/document.pdf'));
+
+    assert.deepEqual(png.subarray(0, pngSignature.length), pngSignature);
+    assert.equal(png.readUInt32BE(16), 80);
+    assert.equal(png.readUInt32BE(20), 40);
     assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
     assert.equal(pdf.subarray(Math.max(0, pdf.length - 1024)).includes(Buffer.from('%%EOF')), true);
   } finally {

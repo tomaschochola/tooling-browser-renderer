@@ -30,7 +30,7 @@ export function createWebpackConfiguration({ entries, outputDirectory, projectDi
     .setContext(projectDirectory)
     .setDevtool(false)
     .setTarget(['web', 'es2025'])
-    .setEntries({ 'browser-artifact': entries })
+    .setEntries(entries.length === 0 ? {} : { 'browser-artifact': entries })
     .setOutputPath(outputDirectory)
     .setPublicPath('./')
     .addBabelLoader({

@@ -15,11 +15,14 @@ import test from 'node:test';
 import { help, parseArguments } from '../src/options.js';
 
 test('describes both explicit artifact commands and the public input model', () => {
-  assert.match(help, /tooling-browser-renderer png OUTPUT --entry REQUEST/u);
-  assert.match(help, /tooling-browser-renderer pdf OUTPUT --entry REQUEST/u);
+  assert.match(help, /tooling-browser-renderer png OUTPUT \[--template REQUEST\] \[--entry REQUEST \.\.\.\]/u);
+  assert.match(help, /tooling-browser-renderer pdf OUTPUT \[--template REQUEST\] \[--entry REQUEST \.\.\.\]/u);
+  assert.match(help, /At least one template or entry is required/u);
+  assert.match(help, /--template REQUEST/u);
   assert.match(help, /Entries execute in the supplied order/u);
   assert.match(help, /globalThis\.browserArtifact/u);
   assert.match(help, /--data NAME=VALUE/u);
+  assert.match(help, /Per-operation browser timeout/u);
   assert.match(help, /top \[right\] \[bottom\] \[left\]/u);
   assert.deepEqual(parseArguments(['--help']), { type: 'help' });
   assert.deepEqual(parseArguments(['png', '--help']), { type: 'help' });
@@ -135,6 +138,20 @@ test('parses format-owned and CSS-owned PDF geometry', () => {
     timeout: 60_000,
     type: 'pdf',
   });
+
+  assert.deepEqual(parseArguments(['pdf', 'report.pdf', '--template', './report.html', '--format', 'A4']), {
+    allowNetwork: false,
+    entries: [],
+    landscape: false,
+    output: 'report.pdf',
+    paper: {
+      format: 'A4',
+      type: 'format',
+    },
+    template: './report.html',
+    timeout: 60_000,
+    type: 'pdf',
+  });
 });
 
 const invalidArguments = [
@@ -142,7 +159,8 @@ const invalidArguments = [
   [['png'], /Expected a command/u],
   [['png', ''], /Output must not be empty/u],
   [['jpeg', 'card.jpg'], /Unknown command/u],
-  [['png', 'card.png', '--width', '10', '--height', '10'], /At least one --entry is required/u],
+  [['png', 'card.png', '--width', '10', '--height', '10'], /At least one --template or --entry is required/u],
+  [['png', 'card.png', '--template', '', '--width', '10', '--height', '10'], /--template must not be empty/u],
   [['png', 'card.png', '--entry', '', '--width', '10', '--height', '10'], /--entry must not be empty/u],
   [['png', 'card.png', '--entry', './card.js', '--asset', 'image', '--width', '10', '--height', '10'], /NAME=SOURCE/u],
   [['png', 'card.png', '--entry', './card.js', '--asset', 'IMAGE=logo.svg', '--width', '10', '--height', '10'], /NAME=SOURCE/u],

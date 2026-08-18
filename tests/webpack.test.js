@@ -44,6 +44,16 @@ test('creates the optimized framework-neutral browser build', () => {
   assert.equal(configuration.module.rules.length, 8);
 });
 
+test('creates an HTML-only browser build without a Webpack entry', () => {
+  const configuration = createWebpackConfiguration({
+    ...options,
+    entries: [],
+  });
+
+  assert.deepEqual(configuration.entry, {});
+  assert.equal(configuration.plugins[0].userOptions.template, options.template);
+});
+
 function createCompiler({ closeError, runError, statistics }) {
   return {
     close(callback) {

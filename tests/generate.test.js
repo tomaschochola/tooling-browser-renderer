@@ -17,7 +17,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import process from 'node:process';
 import test from 'node:test';
-import { generateBrowserArtifact, inspectBrowserResources } from '../src/generate.js';
+import { disableBrowserMotion, generateBrowserArtifact, inspectActiveBrowserAnimations, inspectBrowserResources } from '../src/generate.js';
 
 function createPng(width, height) {
   const buffer = Buffer.alloc(24);
@@ -47,12 +47,33 @@ function createBrowser(configuration = {}) {
       observations.media = options;
       observations.pageActions.push('emulateMedia');
     },
-    async evaluate() {
+    async evaluate(operation) {
+      observations.evaluations ??= [];
+      observations.evaluations.push(operation.name);
+
+      if (operation === disableBrowserMotion) {
+        if (configuration.motionNeverResolves) {
+          return await new Promise(() => {});
+        }
+
+        return;
+      }
+
+      if (operation === inspectActiveBrowserAnimations) {
+        observations.motionInspections ??= 0;
+        observations.motionInspections += 1;
+
+        return configuration.activeAnimationCounts?.[observations.motionInspections - 1] ?? 0;
+      }
+
       if (configuration.resourcesNeverResolve) {
         return await new Promise(() => {});
       }
 
       return configuration.brokenImages ?? [];
+    },
+    frames() {
+      return [page, ...(configuration.childFrames ?? [])];
     },
     async goto(url, options) {
       observations.navigation = { options, url };
@@ -77,6 +98,14 @@ function createBrowser(configuration = {}) {
       return {
         async waitFor(options) {
           observations.selectorOptions = options;
+
+          if (configuration.selectorFailure !== undefined) {
+            events.get('pageerror')?.(configuration.selectorFailure);
+          }
+
+          if (configuration.selectorNeverResolves) {
+            return await new Promise(() => {});
+          }
         },
       };
     },
@@ -233,8 +262,20 @@ test('builds and atomically publishes an exact PNG without deleting siblings', a
     assert.equal(await readFile(sibling, 'utf8'), 'keep');
     assert.deepEqual(observations.compile.entries, [project.entry]);
     assert.equal(observations.compile.projectDirectory, process.cwd());
-    assert.equal(observations.context.deviceScaleFactor, 2);
-    assert.equal(observations.context.offline, true);
+    assert.deepEqual(observations.context, {
+      acceptDownloads: false,
+      colorScheme: 'light',
+      deviceScaleFactor: 2,
+      locale: 'en-US',
+      offline: true,
+      reducedMotion: 'reduce',
+      serviceWorkers: 'block',
+      timezoneId: 'UTC',
+      viewport: {
+        height: 32,
+        width: 64,
+      },
+    });
     assert.equal(observations.routes, 1);
     assert.equal(observations.selector, '[data-ready]');
     assert.deepEqual(observations.selectorOptions, { state: 'attached' });
@@ -254,6 +295,7 @@ test('builds and atomically publishes an exact PNG without deleting siblings', a
       scale: 'device',
       type: 'png',
     });
+    assert.deepEqual(observations.evaluations, ['inspectBrowserResources', 'disableBrowserMotion', 'inspectActiveBrowserAnimations', 'inspectBrowserResources', 'inspectActiveBrowserAnimations']);
     assert.equal(observations.contextClosed, true);
     assert.equal(observations.browserClosed, true);
     let abortReason;
@@ -486,6 +528,233 @@ test('waits for fonts, images, shadow roots, and rendering frames', async () => 
   }
 });
 
+test('disables motion across documents and nested open shadow roots', async () => {
+  const originalDocument = globalThis.document;
+  const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+  const calls = [];
+  const styles = [];
+  let frames = 0;
+  const animation = (name) => ({
+    cancel() {
+      calls.push(`${name}:cancel`);
+      this.playState = 'idle';
+    },
+    playState: 'running',
+  });
+  const documentAnimation = animation('document');
+  const shadowAnimation = animation('shadow');
+  const nestedAnimation = animation('nested');
+  const nestedShadowRoot = {
+    append(style) {
+      styles.push(['nested', style.textContent]);
+    },
+    getAnimations() {
+      return [nestedAnimation];
+    },
+    querySelectorAll() {
+      return [];
+    },
+  };
+  const shadowRoot = {
+    append(style) {
+      styles.push(['shadow', style.textContent]);
+    },
+    getAnimations() {
+      return [shadowAnimation];
+    },
+    querySelectorAll() {
+      return [{ shadowRoot: nestedShadowRoot }];
+    },
+  };
+
+  try {
+    globalThis.document = {
+      createElement(name) {
+        assert.equal(name, 'style');
+
+        return { textContent: '' };
+      },
+      getAnimations() {
+        return [documentAnimation];
+      },
+      head: {
+        append(style) {
+          styles.push(['document', style.textContent]);
+        },
+      },
+      querySelectorAll() {
+        return [{ shadowRoot }, { shadowRoot: null }];
+      },
+    };
+    globalThis.requestAnimationFrame = (callback) => {
+      frames += 1;
+      callback();
+    };
+
+    await disableBrowserMotion();
+    assert.equal(inspectActiveBrowserAnimations(), 0);
+    assert.equal(frames, 2);
+    assert.deepEqual(calls, ['document:cancel', 'shadow:cancel', 'nested:cancel']);
+    assert.deepEqual(
+      styles.map(([root]) => root),
+      ['document', 'shadow', 'nested'],
+    );
+
+    for (const [, css] of styles) {
+      assert.match(css, /animation: none !important/u);
+      assert.match(css, /scroll-behavior: auto !important/u);
+      assert.match(css, /transition: none !important/u);
+    }
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.requestAnimationFrame = originalRequestAnimationFrame;
+  }
+});
+
+test('disables document motion when the head element is unavailable', async () => {
+  const originalDocument = globalThis.document;
+  const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+  let injectedCss;
+
+  try {
+    globalThis.document = {
+      createElement() {
+        return { textContent: '' };
+      },
+      documentElement: {
+        append(style) {
+          injectedCss = style.textContent;
+        },
+      },
+      getAnimations() {
+        return [];
+      },
+      head: null,
+      querySelectorAll() {
+        return [];
+      },
+    };
+    globalThis.requestAnimationFrame = (callback) => {
+      callback();
+    };
+
+    await disableBrowserMotion();
+
+    assert.match(injectedCss, /animation: none !important/u);
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.requestAnimationFrame = originalRequestAnimationFrame;
+  }
+});
+
+test('inspects active motion without changing the page', () => {
+  const originalDocument = globalThis.document;
+  const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+  const calls = [];
+
+  try {
+    globalThis.document = {
+      getAnimations() {
+        return [
+          { cancel: () => calls.push('running'), playState: 'running' },
+          { cancel: () => calls.push('pending'), playState: 'pending' },
+          { cancel: () => calls.push('paused'), playState: 'paused' },
+          { cancel: () => calls.push('finished'), playState: 'finished' },
+        ];
+      },
+      querySelectorAll() {
+        return [];
+      },
+    };
+    globalThis.requestAnimationFrame = () => {
+      calls.push('frame');
+    };
+
+    assert.equal(inspectActiveBrowserAnimations(), 2);
+    assert.deepEqual(calls, []);
+  } finally {
+    globalThis.document = originalDocument;
+    globalThis.requestAnimationFrame = originalRequestAnimationFrame;
+  }
+});
+
+test('controls resources and motion in child frames', async () => {
+  const project = await createProject();
+  const childEvaluations = [];
+  const childFrame = {
+    async evaluate(operation) {
+      childEvaluations.push(operation.name);
+
+      if (operation === inspectActiveBrowserAnimations) {
+        return 0;
+      }
+
+      if (operation === inspectBrowserResources) {
+        return [];
+      }
+    },
+  };
+  const browser = createBrowser({ childFrames: [childFrame] });
+
+  try {
+    await generateBrowserArtifact(pngOptions(project), {
+      compile: async (options) => await compilePage(browser.observations, options),
+      loadPlaywright: browser.loadPlaywright,
+    });
+
+    assert.deepEqual(childEvaluations, ['inspectBrowserResources', 'disableBrowserMotion', 'inspectActiveBrowserAnimations', 'inspectBrowserResources', 'inspectActiveBrowserAnimations']);
+  } finally {
+    await rm(project.directory, { force: true, recursive: true });
+  }
+});
+
+test('rejects active animations after disabling motion and before capture', async () => {
+  const project = await createProject();
+
+  try {
+    for (const activeAnimationCounts of [[1], [0, 1]]) {
+      const browser = createBrowser({ activeAnimationCounts });
+
+      await assert.rejects(
+        async () =>
+          await generateBrowserArtifact(pngOptions(project), {
+            compile: async (options) => await compilePage(browser.observations, options),
+            loadPlaywright: browser.loadPlaywright,
+          }),
+        /contains active animations after motion was disabled: 1/u,
+      );
+      assert.equal(browser.observations.contextClosed, true);
+      assert.equal(browser.observations.browserClosed, true);
+    }
+
+    const childFrame = {
+      async evaluate(operation) {
+        if (operation === inspectActiveBrowserAnimations) {
+          return 1;
+        }
+
+        if (operation === inspectBrowserResources) {
+          return [];
+        }
+      },
+    };
+    const childBrowser = createBrowser({ childFrames: [childFrame] });
+
+    await assert.rejects(
+      async () =>
+        await generateBrowserArtifact(pngOptions(project), {
+          compile: async (options) => await compilePage(childBrowser.observations, options),
+          loadPlaywright: childBrowser.loadPlaywright,
+        }),
+      /contains active animations after motion was disabled: 1/u,
+    );
+    assert.equal(childBrowser.observations.contextClosed, true);
+    assert.equal(childBrowser.observations.browserClosed, true);
+  } finally {
+    await rm(project.directory, { force: true, recursive: true });
+  }
+});
+
 test('builds PDF artifacts for format-owned and CSS-owned paper geometry', async () => {
   const project = await createProject();
   const papers = [
@@ -533,9 +802,16 @@ test('builds PDF artifacts for format-owned and CSS-owned paper geometry', async
       assert.deepEqual(observations.pageActions, ['emulateMedia', 'goto', 'waitForLoadState']);
       assert.deepEqual(observations.context, {
         acceptDownloads: false,
+        colorScheme: 'light',
+        locale: 'en-US',
         offline: false,
         reducedMotion: 'reduce',
         serviceWorkers: 'block',
+        timezoneId: 'UTC',
+        viewport: {
+          height: 1080,
+          width: 1920,
+        },
       });
       assert.deepEqual(observations.pdf, {
         outline: true,
@@ -625,6 +901,42 @@ test('reports browser failures and always closes browser resources', async () =>
         }),
       /did not become ready/u,
     );
+
+    const motionTimeoutBrowser = createBrowser({ motionNeverResolves: true });
+
+    await assert.rejects(
+      async () =>
+        await generateBrowserArtifact(timeoutOptions, {
+          compile: async (options) => await compilePage(motionTimeoutBrowser.observations, options),
+          loadPlaywright: motionTimeoutBrowser.loadPlaywright,
+        }),
+      /motion disabling did not complete/u,
+    );
+    assert.equal(motionTimeoutBrowser.observations.contextClosed, true);
+    assert.equal(motionTimeoutBrowser.observations.browserClosed, true);
+
+    const selectorBrowser = createBrowser({
+      selectorFailure: new Error('selector page failed'),
+      selectorNeverResolves: true,
+    });
+
+    await assert.rejects(
+      async () =>
+        await Promise.race([
+          generateBrowserArtifact(pngOptions(project), {
+            compile: async (options) => await compilePage(selectorBrowser.observations, options),
+            loadPlaywright: selectorBrowser.loadPlaywright,
+          }),
+          new Promise((resolvePromise, rejectPromise) => {
+            setTimeout(() => {
+              rejectPromise(new Error('Browser failure did not interrupt selector waiting.'));
+            }, 100);
+          }),
+        ]),
+      /selector page failed/u,
+    );
+    assert.equal(selectorBrowser.observations.contextClosed, true);
+    assert.equal(selectorBrowser.observations.browserClosed, true);
   } finally {
     await rm(project.directory, { force: true, recursive: true });
   }

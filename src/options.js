@@ -18,24 +18,26 @@ const maximumTimeout = 10 * 60 * 1000;
 const pdfDimensionPattern = /^(?:0|(?:\d+(?:\.\d+)?|\.\d+)(?:px|in|cm|mm))$/u;
 const pdfFormats = new Set(['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'Ledger', 'Legal', 'Letter', 'Tabloid']);
 
-const commonOptions = new Set(['allow-network', 'asset', 'data', 'entry', 'timeout', 'wait-for-selector']);
+const commonOptions = new Set(['allow-network', 'asset', 'data', 'entry', 'template', 'timeout', 'wait-for-selector']);
 const pdfOptions = new Set([...commonOptions, 'css-page-size', 'format', 'landscape', 'margin']);
 const pngOptions = new Set([...commonOptions, 'height', 'pixel-ratio', 'transparent', 'width']);
 
 export const help = `Usage:
-  tooling-browser-renderer png OUTPUT --entry REQUEST [OPTIONS]
-  tooling-browser-renderer pdf OUTPUT --entry REQUEST [OPTIONS]
+  tooling-browser-renderer png OUTPUT [--template REQUEST] [--entry REQUEST ...] [OPTIONS]
+  tooling-browser-renderer pdf OUTPUT [--template REQUEST] [--entry REQUEST ...] [OPTIONS]
 
-Build Webpack entries and render one deterministic browser artifact.
+Build an HTML template and optional Webpack entries, then render one deterministic browser artifact.
+At least one template or entry is required.
 Entries execute in the supplied order. Named inputs are exposed on globalThis.browserArtifact.
 
 Input options:
-      --entry REQUEST           Webpack entry; repeatable
+      --template REQUEST        HTML template (default: built-in template)
+      --entry REQUEST           Optional Webpack entry; repeatable
       --asset NAME=SOURCE       Named asset in browserArtifact.assets; repeatable
       --data NAME=VALUE         Named plain text in browserArtifact.data; repeatable
       --wait-for-selector CSS   Wait until a matching element is attached
       --allow-network           Permit HTTP and HTTPS requests
-      --timeout MILLISECONDS    Operation timeout (default: 60000)
+      --timeout MILLISECONDS    Per-operation browser timeout (default: 60000)
   -h, --help                    Show this help
 
 PNG options:
@@ -63,6 +65,7 @@ const argumentOptions = {
   landscape: { type: 'boolean' },
   margin: { type: 'string' },
   'pixel-ratio': { type: 'string' },
+  template: { type: 'string' },
   timeout: { type: 'string' },
   transparent: { type: 'boolean' },
   'wait-for-selector': { type: 'string' },
@@ -116,13 +119,7 @@ function parseString(value, option) {
 }
 
 function parseEntries(values) {
-  const entries = values?.map((entry) => parseString(entry, '--entry')) ?? [];
-
-  if (entries.length === 0) {
-    throw new TypeError('At least one --entry is required.');
-  }
-
-  return entries;
+  return values?.map((entry) => parseString(entry, '--entry')) ?? [];
 }
 
 function parseAssignments(values, option, noun, valueName) {
@@ -219,9 +216,16 @@ function assertSupportedOptions(values, supported) {
 function parseCommon(values) {
   const assets = parseAssets(values.asset);
   const data = parseData(values.data);
+  const entries = parseEntries(values.entry);
+  const template = values.template === undefined ? undefined : parseString(values.template, '--template');
+
+  if (entries.length === 0 && template === undefined) {
+    throw new TypeError('At least one --template or --entry is required.');
+  }
+
   const options = {
     allowNetwork: values['allow-network'] ?? false,
-    entries: parseEntries(values.entry),
+    entries,
     timeout: parsePositiveInteger(values.timeout, '--timeout', '60000', maximumTimeout),
   };
 
@@ -231,6 +235,10 @@ function parseCommon(values) {
 
   if (Object.keys(data).length > 0) {
     options.data = data;
+  }
+
+  if (template !== undefined) {
+    options.template = template;
   }
 
   if (values['wait-for-selector'] !== undefined) {
