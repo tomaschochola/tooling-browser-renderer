@@ -26,6 +26,7 @@ export function createWebpackConfiguration({ entries, outputDirectory, projectDi
     argv: {
       mode: 'production',
     },
+    ecmaVersion: 2025,
   })
     .setContext(projectDirectory)
     .setDevtool(false)
@@ -42,7 +43,6 @@ export function createWebpackConfiguration({ entries, outputDirectory, projectDi
     .addHtmlLoader()
     .addAssetQueryRules()
     .addHtmlPlugin({ template })
-    .setEcmaVersion(2025)
     .addTerserMinimizer()
     .addCssMinimizer()
     .addHtmlMinimizer()

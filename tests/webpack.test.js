@@ -41,7 +41,7 @@ test('creates the optimized framework-neutral browser build', () => {
     configuration.plugins.map(({ constructor }) => constructor.name),
     ['HtmlWebpackPlugin', 'ImageMinimizerPlugin'],
   );
-  assert.equal(configuration.module.rules.length, 8);
+  assert.equal(configuration.module.rules.length, 4);
 });
 
 test('creates an HTML-only browser build without a Webpack entry', () => {
