@@ -13,9 +13,9 @@
 import { ESLintConfigBuilder } from '@tomaschochola/tooling-eslint';
 
 export default new ESLintConfigBuilder()
-  .addNodeGlobals()
-  .addBrowserGlobals()
-  .addGitIgnoreFile(import.meta.url)
-  .addJavaScriptRecommendedRules()
-  .addSonarJsRecommendedRules()
-  .toConfig();
+    .addNodeGlobals()
+    .addBrowserGlobals()
+    .addGitIgnoreFile(import.meta.url)
+    .addJavaScriptRecommendedRules()
+    .addSonarJsRecommendedRules()
+    .toConfig();

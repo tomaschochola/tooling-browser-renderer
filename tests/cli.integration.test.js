@@ -27,12 +27,12 @@ const packageRoot = fileURLToPath(new URL('..', import.meta.url));
 const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 test('renders optimized HTML, JavaScript, SCSS, PNG, and PDF through the public CLI', async () => {
-  const project = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-integration-'));
+    const project = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-integration-'));
 
-  try {
-    await writeFile(
-      join(project, 'index.html'),
-      `<!doctype html>
+    try {
+        await writeFile(
+            join(project, 'index.html'),
+            `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -43,10 +43,10 @@ test('renders optimized HTML, JavaScript, SCSS, PNG, and PDF through the public 
   </body>
 </html>
 `,
-    );
-    await writeFile(
-      join(project, 'artifact.ts'),
-      `const root: HTMLElement | null = document.querySelector('[data-artifact-root]');
+        );
+        await writeFile(
+            join(project, 'artifact.ts'),
+            `const root: HTMLElement | null = document.querySelector('[data-artifact-root]');
 
 if (root === null) {
   throw new Error('The custom HTML template was not used.');
@@ -66,10 +66,10 @@ requestAnimationFrame(() => {
   heading.dataset.ready = '';
 });
 `,
-    );
-    await writeFile(
-      join(project, 'artifact.scss'),
-      `body {
+        );
+        await writeFile(
+            join(project, 'artifact.scss'),
+            `body {
   align-items: center;
   background: #123456;
   color: #ffffff;
@@ -78,71 +78,71 @@ requestAnimationFrame(() => {
   margin: 0;
 }
 `,
-    );
-    await writeFile(
-      join(project, 'document.js'),
-      `const heading = document.createElement('h1');
+        );
+        await writeFile(
+            join(project, 'document.js'),
+            `const heading = document.createElement('h1');
 
 heading.textContent = 'PDF artifact';
 document.body.replaceChildren(heading);
 `,
-    );
-    await writeFile(
-      join(project, 'document.scss'),
-      `@page {
+        );
+        await writeFile(
+            join(project, 'document.scss'),
+            `@page {
   size: 100mm 50mm;
 }
 `,
-    );
-    await execute(
-      process.execPath,
-      [
-        cli,
-        'png',
-        'generated/card.png',
-        '--template',
-        './index.html',
-        '--entry',
-        './artifact.ts',
-        '--entry',
-        './artifact.scss',
-        '--data',
-        'title=Browser artifact',
-        '--width',
-        '80',
-        '--height',
-        '40',
-        '--pixel-ratio',
-        '2',
-        '--wait-for-selector',
-        '[data-ready]',
-      ],
-      { cwd: project },
-    );
-    await execute(process.execPath, [cli, 'pdf', 'generated/document.pdf', '--entry', './document.js', '--entry', './document.scss', '--css-page-size'], { cwd: project });
-    const png = await readFile(join(project, 'generated/card.png'));
-    const pdf = await readFile(join(project, 'generated/document.pdf'));
+        );
+        await execute(
+            process.execPath,
+            [
+                cli,
+                'png',
+                'generated/card.png',
+                '--template',
+                './index.html',
+                '--entry',
+                './artifact.ts',
+                '--entry',
+                './artifact.scss',
+                '--data',
+                'title=Browser artifact',
+                '--width',
+                '80',
+                '--height',
+                '40',
+                '--pixel-ratio',
+                '2',
+                '--wait-for-selector',
+                '[data-ready]',
+            ],
+            { cwd: project },
+        );
+        await execute(process.execPath, [cli, 'pdf', 'generated/document.pdf', '--entry', './document.js', '--entry', './document.scss', '--css-page-size'], { cwd: project });
+        const png = await readFile(join(project, 'generated/card.png'));
+        const pdf = await readFile(join(project, 'generated/document.pdf'));
 
-    assert.deepEqual(png.subarray(0, pngSignature.length), pngSignature);
-    assert.equal(png.readUInt32BE(16), 160);
-    assert.equal(png.readUInt32BE(20), 80);
-    assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
-    assert.equal(pdf.subarray(Math.max(0, pdf.length - 1024)).includes(Buffer.from('%%EOF')), true);
-  } finally {
-    await rm(project, {
-      force: true,
-      recursive: true,
-    });
-  }
+        assert.deepEqual(png.subarray(0, pngSignature.length), pngSignature);
+        assert.equal(png.readUInt32BE(16), 160);
+        assert.equal(png.readUInt32BE(20), 80);
+        assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
+        assert.equal(pdf.subarray(Math.max(0, pdf.length - 1024)).includes(Buffer.from('%%EOF')), true);
+    } finally {
+        await rm(project, {
+            force: true,
+            recursive: true,
+        });
+    }
 });
 
 test('renders PNG and A4 PDF artifacts from only a custom HTML template', async () => {
-  const project = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-template-only-'));
+    const project = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-template-only-'));
 
-  try {
-    await writeFile(
-      join(project, 'index.html'),
-      `<!doctype html>
+    try {
+        await writeFile(
+            join(project, 'index.html'),
+            `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -153,40 +153,40 @@ test('renders PNG and A4 PDF artifacts from only a custom HTML template', async 
   </body>
 </html>
 `,
-    );
-    await execute(process.execPath, [cli, 'png', 'generated/card.png', '--template', './index.html', '--width', '80', '--height', '40', '--wait-for-selector', '[data-ready]'], { cwd: project });
-    await execute(process.execPath, [cli, 'pdf', 'generated/document.pdf', '--template', './index.html', '--format', 'A4', '--wait-for-selector', '[data-ready]'], { cwd: project });
-    const png = await readFile(join(project, 'generated/card.png'));
-    const pdf = await readFile(join(project, 'generated/document.pdf'));
+        );
+        await execute(process.execPath, [cli, 'png', 'generated/card.png', '--template', './index.html', '--width', '80', '--height', '40', '--wait-for-selector', '[data-ready]'], { cwd: project });
+        await execute(process.execPath, [cli, 'pdf', 'generated/document.pdf', '--template', './index.html', '--format', 'A4', '--wait-for-selector', '[data-ready]'], { cwd: project });
+        const png = await readFile(join(project, 'generated/card.png'));
+        const pdf = await readFile(join(project, 'generated/document.pdf'));
 
-    assert.deepEqual(png.subarray(0, pngSignature.length), pngSignature);
-    assert.equal(png.readUInt32BE(16), 80);
-    assert.equal(png.readUInt32BE(20), 40);
-    assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
-    assert.equal(pdf.subarray(Math.max(0, pdf.length - 1024)).includes(Buffer.from('%%EOF')), true);
-  } finally {
-    await rm(project, {
-      force: true,
-      recursive: true,
-    });
-  }
+        assert.deepEqual(png.subarray(0, pngSignature.length), pngSignature);
+        assert.equal(png.readUInt32BE(16), 80);
+        assert.equal(png.readUInt32BE(20), 40);
+        assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
+        assert.equal(pdf.subarray(Math.max(0, pdf.length - 1024)).includes(Buffer.from('%%EOF')), true);
+    } finally {
+        await rm(project, {
+            force: true,
+            recursive: true,
+        });
+    }
 });
 
 test('renders the extensible Open Graph product from named assets and plain-text data', async () => {
-  const project = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-open-graph-'));
+    const project = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-open-graph-'));
 
-  try {
-    await writeFile(
-      join(project, 'logo.svg'),
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    try {
+        await writeFile(
+            join(project, 'logo.svg'),
+            `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <rect width="100" height="100" rx="18" fill="#f9ca24" />
   <path d="M22 28h56v12H22zm0 32h56v12H22z" fill="#101114" />
 </svg>
 `,
-    );
-    await writeFile(
-      join(project, 'open-graph.css'),
-      `.open-graph {
+        );
+        await writeFile(
+            join(project, 'open-graph.css'),
+            `.open-graph {
   background: #123456;
 }
 
@@ -207,10 +207,10 @@ test('renders the extensible Open Graph product from named assets and plain-text
   color: #9ad5ff;
 }
 `,
-    );
-    await writeFile(
-      join(project, 'open-graph-check.js'),
-      `const tolerance = 1;
+        );
+        await writeFile(
+            join(project, 'open-graph-check.js'),
+            `const tolerance = 1;
 
 function assertClose(actual, expected, message) {
   if (Math.abs(actual - expected) > tolerance) {
@@ -302,10 +302,10 @@ void globalThis.browserArtifact.ready.then(() => {
   });
 });
 `,
-    );
-    await writeFile(
-      join(project, 'open-graph-auto-check.js'),
-      `const productReady = globalThis.browserArtifact.ready;
+        );
+        await writeFile(
+            join(project, 'open-graph-auto-check.js'),
+            `const productReady = globalThis.browserArtifact.ready;
 
 globalThis.browserArtifact.ready = productReady.then(() => {
   const container = document.querySelector('.open-graph');
@@ -347,142 +347,142 @@ globalThis.browserArtifact.ready = productReady.then(() => {
   }
 });
 `,
-    );
+        );
 
-    const packageScope = join(project, 'node_modules/@tomaschochola');
+        const packageScope = join(project, 'node_modules/@tomaschochola');
 
-    await mkdir(packageScope, { recursive: true });
-    await symlink(packageRoot, join(packageScope, 'tooling-browser-renderer'), 'dir');
+        await mkdir(packageScope, { recursive: true });
+        await symlink(packageRoot, join(packageScope, 'tooling-browser-renderer'), 'dir');
 
-    await execute(
-      process.execPath,
-      [cli, 'png', 'generated/logo-only.png', '--entry', '@tomaschochola/tooling-browser-renderer/products/open-graph', '--asset', 'image=logo.svg', '--width', '1200', '--height', '630'],
-      { cwd: project },
-    );
-    await execute(
-      process.execPath,
-      [
-        cli,
-        'png',
-        'generated/three-lines.png',
-        '--entry',
-        '@tomaschochola/tooling-browser-renderer/products/open-graph',
-        '--entry',
-        './open-graph.css',
-        '--entry',
-        './open-graph-check.js',
-        '--asset',
-        'image=logo.svg',
-        '--data',
-        'open-graph-line-1=Městysané',
-        '--data',
-        'open-graph-line-2=Bouchalka',
-        '--data',
-        'open-graph-line-3=Zlonice',
-        '--data',
-        'open-graph-scale=static',
-        '--width',
-        '1200',
-        '--height',
-        '630',
-        '--wait-for-selector',
-        '[data-ready]',
-      ],
-      { cwd: project },
-    );
-    await execute(
-      process.execPath,
-      [
-        cli,
-        'png',
-        'generated/auto.png',
-        '--entry',
-        '@tomaschochola/tooling-browser-renderer/products/open-graph',
-        '--entry',
-        './open-graph.css',
-        '--entry',
-        './open-graph-auto-check.js',
-        '--asset',
-        'image=logo.svg',
-        '--data',
-        'open-graph-line-1=ŠpS',
-        '--data',
-        'open-graph-scale=auto',
-        '--width',
-        '1200',
-        '--height',
-        '630',
-      ],
-      { cwd: project },
-    );
-    await execute(
-      process.execPath,
-      [
-        cli,
-        'png',
-        'generated/auto-long.png',
-        '--entry',
-        '@tomaschochola/tooling-browser-renderer/products/open-graph',
-        '--entry',
-        './open-graph.css',
-        '--entry',
-        './open-graph-auto-check.js',
-        '--asset',
-        'image=logo.svg',
-        '--data',
-        'open-graph-line-1=MĚSTYSANÉ PRO ZLONICE',
-        '--data',
-        'open-graph-scale=auto',
-        '--width',
-        '1200',
-        '--height',
-        '630',
-      ],
-      { cwd: project },
-    );
-    await execute(
-      process.execPath,
-      [
-        cli,
-        'png',
-        'generated/auto-three-rows.png',
-        '--entry',
-        '@tomaschochola/tooling-browser-renderer/products/open-graph',
-        '--entry',
-        './open-graph.css',
-        '--entry',
-        './open-graph-auto-check.js',
-        '--asset',
-        'image=logo.svg',
-        '--data',
-        'open-graph-image-rows=3',
-        '--data',
-        'open-graph-line-1=BOUCHALKA.',
-        '--data',
-        'open-graph-line-2=ZLONICE.',
-        '--data',
-        'open-graph-line-3=TICHO.',
-        '--data',
-        'open-graph-scale=auto',
-        '--width',
-        '1200',
-        '--height',
-        '630',
-      ],
-      { cwd: project },
-    );
+        await execute(
+            process.execPath,
+            [cli, 'png', 'generated/logo-only.png', '--entry', '@tomaschochola/tooling-browser-renderer/products/open-graph', '--asset', 'image=logo.svg', '--width', '1200', '--height', '630'],
+            { cwd: project },
+        );
+        await execute(
+            process.execPath,
+            [
+                cli,
+                'png',
+                'generated/three-lines.png',
+                '--entry',
+                '@tomaschochola/tooling-browser-renderer/products/open-graph',
+                '--entry',
+                './open-graph.css',
+                '--entry',
+                './open-graph-check.js',
+                '--asset',
+                'image=logo.svg',
+                '--data',
+                'open-graph-line-1=Městysané',
+                '--data',
+                'open-graph-line-2=Bouchalka',
+                '--data',
+                'open-graph-line-3=Zlonice',
+                '--data',
+                'open-graph-scale=static',
+                '--width',
+                '1200',
+                '--height',
+                '630',
+                '--wait-for-selector',
+                '[data-ready]',
+            ],
+            { cwd: project },
+        );
+        await execute(
+            process.execPath,
+            [
+                cli,
+                'png',
+                'generated/auto.png',
+                '--entry',
+                '@tomaschochola/tooling-browser-renderer/products/open-graph',
+                '--entry',
+                './open-graph.css',
+                '--entry',
+                './open-graph-auto-check.js',
+                '--asset',
+                'image=logo.svg',
+                '--data',
+                'open-graph-line-1=ŠpS',
+                '--data',
+                'open-graph-scale=auto',
+                '--width',
+                '1200',
+                '--height',
+                '630',
+            ],
+            { cwd: project },
+        );
+        await execute(
+            process.execPath,
+            [
+                cli,
+                'png',
+                'generated/auto-long.png',
+                '--entry',
+                '@tomaschochola/tooling-browser-renderer/products/open-graph',
+                '--entry',
+                './open-graph.css',
+                '--entry',
+                './open-graph-auto-check.js',
+                '--asset',
+                'image=logo.svg',
+                '--data',
+                'open-graph-line-1=MĚSTYSANÉ PRO ZLONICE',
+                '--data',
+                'open-graph-scale=auto',
+                '--width',
+                '1200',
+                '--height',
+                '630',
+            ],
+            { cwd: project },
+        );
+        await execute(
+            process.execPath,
+            [
+                cli,
+                'png',
+                'generated/auto-three-rows.png',
+                '--entry',
+                '@tomaschochola/tooling-browser-renderer/products/open-graph',
+                '--entry',
+                './open-graph.css',
+                '--entry',
+                './open-graph-auto-check.js',
+                '--asset',
+                'image=logo.svg',
+                '--data',
+                'open-graph-image-rows=3',
+                '--data',
+                'open-graph-line-1=BOUCHALKA.',
+                '--data',
+                'open-graph-line-2=ZLONICE.',
+                '--data',
+                'open-graph-line-3=TICHO.',
+                '--data',
+                'open-graph-scale=auto',
+                '--width',
+                '1200',
+                '--height',
+                '630',
+            ],
+            { cwd: project },
+        );
 
-    for (const artifact of ['auto-long.png', 'auto-three-rows.png', 'auto.png', 'logo-only.png', 'three-lines.png']) {
-      const png = await readFile(join(project, 'generated', artifact));
+        for (const artifact of ['auto-long.png', 'auto-three-rows.png', 'auto.png', 'logo-only.png', 'three-lines.png']) {
+            const png = await readFile(join(project, 'generated', artifact));
 
-      assert.deepEqual(png.subarray(0, pngSignature.length), pngSignature);
-      assert.equal(png.readUInt32BE(16), 1200);
-      assert.equal(png.readUInt32BE(20), 630);
+            assert.deepEqual(png.subarray(0, pngSignature.length), pngSignature);
+            assert.equal(png.readUInt32BE(16), 1200);
+            assert.equal(png.readUInt32BE(20), 630);
+        }
+    } finally {
+        await rm(project, {
+            force: true,
+            recursive: true,
+        });
     }
-  } finally {
-    await rm(project, {
-      force: true,
-      recursive: true,
-    });
-  }
 });

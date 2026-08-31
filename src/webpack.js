@@ -15,100 +15,100 @@ import { WebpackConfigBuilder } from '@tomaschochola/tooling-webpack';
 import webpack from 'webpack';
 
 export function createWebpackConfiguration({ entries, outputDirectory, projectDirectory, template }) {
-  const babel = new BabelConfigBuilder({
-    mode: 'production',
-  })
-    .addPresetTypeScript()
-    .addPresetReact()
-    .toConfig();
-
-  return new WebpackConfigBuilder({
-    argv: {
-      mode: 'production',
-    },
-    ecmaVersion: 2025,
-  })
-    .setContext(projectDirectory)
-    .setDevtool(false)
-    .setTarget(['web', 'es2025'])
-    .setEntries(entries.length === 0 ? {} : { 'browser-artifact': entries })
-    .setOutputPath(outputDirectory)
-    .setPublicPath('./')
-    .addBabelLoader({
-      ...babel,
-      babelrc: false,
-      configFile: false,
+    const babel = new BabelConfigBuilder({
+        mode: 'production',
     })
-    .addStyleLoaders()
-    .addHtmlLoader()
-    .addAssetQueryRules()
-    .addHtmlPlugin({ template })
-    .addTerserMinimizer()
-    .addCssMinimizer()
-    .addHtmlMinimizer()
-    .addJsonMinimizer()
-    .addImageMinimizer()
-    .toConfig();
+        .addPresetTypeScript()
+        .addPresetReact()
+        .toConfig();
+
+    return new WebpackConfigBuilder({
+        argv: {
+            mode: 'production',
+        },
+        ecmaVersion: 2025,
+    })
+        .setContext(projectDirectory)
+        .setDevtool(false)
+        .setTarget(['web', 'es2025'])
+        .setEntries(entries.length === 0 ? {} : { 'browser-artifact': entries })
+        .setOutputPath(outputDirectory)
+        .setPublicPath('./')
+        .addBabelLoader({
+            ...babel,
+            babelrc: false,
+            configFile: false,
+        })
+        .addStyleLoaders()
+        .addHtmlLoader()
+        .addAssetQueryRules()
+        .addHtmlPlugin({ template })
+        .addTerserMinimizer()
+        .addCssMinimizer()
+        .addHtmlMinimizer()
+        .addJsonMinimizer()
+        .addImageMinimizer()
+        .toConfig();
 }
 
 function runCompiler(compiler) {
-  return new Promise((resolvePromise, rejectPromise) => {
-    compiler.run((error, statistics) => {
-      if (error !== null && error !== undefined) {
-        rejectPromise(error);
+    return new Promise((resolvePromise, rejectPromise) => {
+        compiler.run((error, statistics) => {
+            if (error !== null && error !== undefined) {
+                rejectPromise(error);
 
-        return;
-      }
+                return;
+            }
 
-      if (statistics === undefined) {
-        rejectPromise(new Error('Webpack completed without build statistics.'));
+            if (statistics === undefined) {
+                rejectPromise(new Error('Webpack completed without build statistics.'));
 
-        return;
-      }
+                return;
+            }
 
-      resolvePromise(statistics);
+            resolvePromise(statistics);
+        });
     });
-  });
 }
 
 function closeCompiler(compiler) {
-  return new Promise((resolvePromise, rejectPromise) => {
-    compiler.close((error) => {
-      if (error !== null && error !== undefined) {
-        rejectPromise(error);
+    return new Promise((resolvePromise, rejectPromise) => {
+        compiler.close((error) => {
+            if (error !== null && error !== undefined) {
+                rejectPromise(error);
 
-        return;
-      }
+                return;
+            }
 
-      resolvePromise();
+            resolvePromise();
+        });
     });
-  });
 }
 
 export async function compileBrowserPage(options, createCompiler = webpack) {
-  const compiler = createCompiler(createWebpackConfiguration(options));
+    const compiler = createCompiler(createWebpackConfiguration(options));
 
-  let statistics;
+    let statistics;
 
-  try {
-    statistics = await runCompiler(compiler);
-  } finally {
-    await closeCompiler(compiler);
-  }
+    try {
+        statistics = await runCompiler(compiler);
+    } finally {
+        await closeCompiler(compiler);
+    }
 
-  const hasErrors = statistics.hasErrors();
-  const hasWarnings = statistics.hasWarnings();
+    const hasErrors = statistics.hasErrors();
+    const hasWarnings = statistics.hasWarnings();
 
-  if (hasErrors || hasWarnings) {
-    throw new Error(
-      `Browser artifact Webpack build ${hasErrors ? 'failed' : 'produced warnings'}:\n${statistics.toString({
-        all: false,
-        colors: false,
-        errorDetails: true,
-        errors: true,
-        moduleTrace: true,
-        warnings: true,
-      })}`,
-    );
-  }
+    if (hasErrors || hasWarnings) {
+        throw new Error(
+            `Browser artifact Webpack build ${hasErrors ? 'failed' : 'produced warnings'}:\n${statistics.toString({
+                all: false,
+                colors: false,
+                errorDetails: true,
+                errors: true,
+                moduleTrace: true,
+                warnings: true,
+            })}`,
+        );
+    }
 }

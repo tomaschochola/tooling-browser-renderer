@@ -1,64 +1,64 @@
 {
-  "author": {
-    "email": "tomaschochola@tomaschochola.cz",
-    "name": "Tomáš Chochola",
-    "url": "https://github.com/tomaschochola"
-  },
-  "bin": {
-    "tooling-browser-renderer": "src/cli.js"
-  },
-  "bugs": {
-    "email": "tomaschochola@tomaschochola.cz",
-    "url": "https://github.com/tomaschochola/tooling-browser-renderer/issues"
-  },
-  "contributors": [
-    {
-      "email": "tomaschochola@tomaschochola.cz",
-      "name": "Tomáš Chochola",
-      "url": "https://github.com/tomaschochola"
-    }
-  ],
-  "dependencies": {
-    "@babel/core": "^8.0.1",
-    "@fontsource-variable/inter-tight": "^5.3.0",
-    "@tomaschochola/tooling-babel": "github:tomaschochola/tooling-babel#main",
-    "@tomaschochola/tooling-webpack": "github:tomaschochola/tooling-webpack#main",
-    "playwright": "1.62.1",
-    "webpack": "^5.109.2"
-  },
-  "description": "Deterministic browser rendering for screenshots, social cards, and PDF documents.",
-  "devDependencies": {
-    "@tomaschochola/tooling-eslint": "github:tomaschochola/tooling-eslint#main",
-    "@tomaschochola/tooling-prettier": "github:tomaschochola/tooling-prettier#main",
-    "@tomaschochola/tooling-stylelint": "github:tomaschochola/tooling-stylelint#main",
-    "@tomaschochola/tooling-trimmer": "github:tomaschochola/tooling-trimmer#main"
-  },
-  "exports": {
-    "./products/open-graph": "./products/open-graph/index.js"
-  },
-  "files": [
-    "products",
-    "src"
-  ],
-  "funding": {
-    "type": "github",
-    "url": "https://github.com/sponsors/tomaschochola"
-  },
-  "homepage": "https://github.com/tomaschochola/tooling-browser-renderer",
-  "keywords": [
-    "tomaschochola",
-    "TomasChochola",
-    "Tomas Chochola",
-    "Tomáš Chochola",
-    "tooling-browser-renderer"
-  ],
-  "license": "CC-BY-ND-4.0",
-  "name": "@tomaschochola/tooling-browser-renderer",
-  "private": true,
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tomaschochola/tooling-browser-renderer.git"
-  },
-  "type": "module",
-  "version": "0.0.0"
+    "author": {
+        "email": "tomaschochola@tomaschochola.cz",
+        "name": "Tomáš Chochola",
+        "url": "https://github.com/tomaschochola"
+    },
+    "bin": {
+        "tooling-browser-renderer": "src/cli.js"
+    },
+    "bugs": {
+        "email": "tomaschochola@tomaschochola.cz",
+        "url": "https://github.com/tomaschochola/tooling-browser-renderer/issues"
+    },
+    "contributors": [
+        {
+            "email": "tomaschochola@tomaschochola.cz",
+            "name": "Tomáš Chochola",
+            "url": "https://github.com/tomaschochola"
+        }
+    ],
+    "dependencies": {
+        "@babel/core": "^8.0.1",
+        "@fontsource-variable/inter-tight": "^5.3.0",
+        "@tomaschochola/tooling-babel": "git+https://github.com/tomaschochola/tooling-babel.git#main",
+        "@tomaschochola/tooling-webpack": "git+https://github.com/tomaschochola/tooling-webpack.git#main",
+        "playwright": "1.62.1",
+        "webpack": "^5.109.2"
+    },
+    "description": "Deterministic browser rendering for screenshots, social cards, and PDF documents.",
+    "devDependencies": {
+        "@tomaschochola/tooling-eslint": "git+https://github.com/tomaschochola/tooling-eslint.git#main",
+        "@tomaschochola/tooling-prettier": "git+https://github.com/tomaschochola/tooling-prettier.git#main",
+        "@tomaschochola/tooling-stylelint": "git+https://github.com/tomaschochola/tooling-stylelint.git#main",
+        "@tomaschochola/tooling-trimmer": "git+https://github.com/tomaschochola/tooling-trimmer.git#main"
+    },
+    "exports": {
+        "./products/open-graph": "./products/open-graph/index.js"
+    },
+    "files": [
+        "products",
+        "src"
+    ],
+    "funding": {
+        "type": "github",
+        "url": "https://github.com/sponsors/tomaschochola"
+    },
+    "homepage": "https://github.com/tomaschochola/tooling-browser-renderer",
+    "keywords": [
+        "tomaschochola",
+        "TomasChochola",
+        "Tomas Chochola",
+        "Tomáš Chochola",
+        "tooling-browser-renderer"
+    ],
+    "license": "CC-BY-ND-4.0",
+    "name": "@tomaschochola/tooling-browser-renderer",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/tomaschochola/tooling-browser-renderer.git"
+    },
+    "type": "module",
+    "version": "0.0.0"
 }
