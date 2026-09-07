@@ -10,12 +10,12 @@
  * @see {@link https://github.com/sponsors/tomaschochola} GitHub Sponsors
  */
 
-import { ESLintConfigBuilder } from '@tomaschochola/tooling-eslint';
+import { ESLintConfigBuilder, filePatterns } from '@tomaschochola/tooling-eslint';
 
 export default new ESLintConfigBuilder()
-    .addNodeGlobals()
-    .addBrowserGlobals()
+    .addNodeGlobals({ files: ['eslint.config.js', 'prettier.config.js', 'stylelint.config.js', 'src/**/*.js', 'tests/**/*.js'] })
+    .addBrowserGlobals({ files: ['products/**/*.js'] })
     .addGitIgnoreFile(import.meta.url)
-    .addJavaScriptRecommendedRules()
-    .addSonarJsRecommendedRules()
+    .addJavaScriptRecommendedRules({ files: filePatterns.scripts })
+    // .addSonarJsRecommendedRules({ files: ['products/**/*.js'] })
     .toConfig();

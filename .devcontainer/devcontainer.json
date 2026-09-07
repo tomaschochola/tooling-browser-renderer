@@ -18,6 +18,7 @@
     "remoteUser": "ubuntu",
     "runArgs": ["--ipc=host"],
     "updateRemoteUserUID": true,
+    "userEnvProbe": "none",
     "waitFor": "postCreateCommand",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
 }
