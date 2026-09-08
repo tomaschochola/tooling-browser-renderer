@@ -71,10 +71,6 @@ body {
     row-gap: calc(1lh - 1cap);
 }
 
-.open-graph-text:empty {
-    display: none;
-}
-
 .open-graph-line {
     text-box-edge: cap alphabetic;
     text-box-trim: trim-both;
@@ -122,6 +118,10 @@ body {
 
 :where(.open-graph[data-open-graph-text-position='bottom'], .open-graph[data-open-graph-text-position='top']) .open-graph-text {
     text-align: center;
+}
+
+.open-graph-text:empty {
+    display: none;
 }
 
 :where(.open-graph:not([data-open-graph-line-count='0'])[data-open-graph-text-position='left'], .open-graph:not([data-open-graph-line-count='0'])[data-open-graph-text-position='right'])
