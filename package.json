@@ -24,7 +24,7 @@
         "@tomaschochola/tooling-babel": "git+https://github.com/tomaschochola/tooling-babel.git#main",
         "@tomaschochola/tooling-webpack": "git+https://github.com/tomaschochola/tooling-webpack.git#main",
         "playwright": "1.62.1",
-        "webpack": "^5.109.2"
+        "webpack": "^5.110.3"
     },
     "description": "Deterministic browser rendering for screenshots, social cards, and PDF documents.",
     "devDependencies": {
