@@ -22,6 +22,7 @@ test('describes both explicit artifact commands and the public input model', () 
     assert.match(help, /Entries execute in the supplied order/u);
     assert.match(help, /globalThis\.browserArtifact/u);
     assert.match(help, /--data NAME=VALUE/u);
+    assert.match(help, /--allow-origin ORIGIN/u);
     assert.match(help, /Per-operation browser timeout/u);
     assert.match(help, /top \[right\] \[bottom\] \[left\]/u);
     assert.deepEqual(parseArguments(['--help']), { type: 'help' });
@@ -54,12 +55,17 @@ test('parses a complete PNG command', () => {
             '--transparent',
             '--wait-for-selector',
             '[data-ready]',
-            '--allow-network',
+            '--allow-origin',
+            'https://example.com',
+            '--allow-origin',
+            'http://127.0.0.1:63010',
+            '--allow-origin',
+            'http://localhost',
             '--timeout',
             '120000',
         ]),
         {
-            allowNetwork: true,
+            allowedOrigins: ['https://example.com', 'http://127.0.0.1:63010', 'http://localhost'],
             assets: {
                 background: 'https://example.com/background.png',
                 image: 'logo.svg',
@@ -85,7 +91,7 @@ test('parses a complete PNG command', () => {
 
 test('applies PNG defaults', () => {
     assert.deepEqual(parseArguments(['png', 'card.png', '--entry', './card.js', '--width', '64', '--height', '32']), {
-        allowNetwork: false,
+        allowedOrigins: [],
         entries: ['./card.js'],
         output: 'card.png',
         pixelRatio: 1,
@@ -116,7 +122,7 @@ test('expands CSS-compatible PDF margin shorthand', () => {
 
 test('parses format-owned and CSS-owned PDF geometry', () => {
     assert.deepEqual(parseArguments(['pdf', 'report.pdf', '--entry', './report.js', '--format', 'Letter', '--landscape']), {
-        allowNetwork: false,
+        allowedOrigins: [],
         entries: ['./report.js'],
         landscape: true,
         output: 'report.pdf',
@@ -129,7 +135,7 @@ test('parses format-owned and CSS-owned PDF geometry', () => {
     });
 
     assert.deepEqual(parseArguments(['pdf', 'report.pdf', '--entry', './report.js', '--css-page-size']), {
-        allowNetwork: false,
+        allowedOrigins: [],
         entries: ['./report.js'],
         output: 'report.pdf',
         paper: {
@@ -140,7 +146,7 @@ test('parses format-owned and CSS-owned PDF geometry', () => {
     });
 
     assert.deepEqual(parseArguments(['pdf', 'report.pdf', '--template', './report.html', '--format', 'A4']), {
-        allowNetwork: false,
+        allowedOrigins: [],
         entries: [],
         landscape: false,
         output: 'report.pdf',
@@ -170,6 +176,15 @@ const invalidArguments = [
     [['png', 'card.png', '--entry', './card.js', '--data', 'Text=value', '--width', '10', '--height', '10'], /NAME=VALUE/u],
     [['png', 'card.png', '--entry', './card.js', '--data', 'text=', '--width', '10', '--height', '10'], /NAME=VALUE/u],
     [['png', 'card.png', '--entry', './card.js', '--data', 'text=a', '--data', 'text=b', '--width', '10', '--height', '10'], /Duplicate browser artifact data/u],
+    [['png', 'card.png', '--entry', './card.js', '--allow-origin', '', '--width', '10', '--height', '10'], /--allow-origin must not be empty/u],
+    [['png', 'card.png', '--entry', './card.js', '--allow-origin', 'http://example.com', '--width', '10', '--height', '10'], /absolute HTTPS origin or a loopback HTTP origin/u],
+    [['png', 'card.png', '--entry', './card.js', '--allow-origin', 'ftp://example.com', '--width', '10', '--height', '10'], /absolute HTTPS origin or a loopback HTTP origin/u],
+    [['png', 'card.png', '--entry', './card.js', '--allow-origin', 'https://example.com/path', '--width', '10', '--height', '10'], /without credentials, path, query, or fragment/u],
+    [['png', 'card.png', '--entry', './card.js', '--allow-origin', 'not-an-url', '--width', '10', '--height', '10'], /absolute HTTPS origin or a loopback HTTP origin/u],
+    [
+        ['png', 'card.png', '--entry', './card.js', '--allow-origin', 'https://example.com', '--allow-origin', 'https://example.com', '--width', '10', '--height', '10'],
+        /Duplicate allowed network origin/u,
+    ],
     [['png', 'card.png', '--entry', './card.js', '--width', '0', '--height', '10'], /--width must be a positive integer/u],
     [['png', 'card.png', '--entry', './card.js', '--height', '10'], /--width must be a positive integer/u],
     [['png', 'card.png', '--entry', './card.js', '--width', '16385', '--height', '10'], /--width must not exceed/u],

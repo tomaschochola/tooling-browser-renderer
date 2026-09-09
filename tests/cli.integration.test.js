@@ -13,6 +13,7 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { execFile } from 'node:child_process';
+import { createServer } from 'node:http';
 import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -165,6 +166,60 @@ test('renders PNG and A4 PDF artifacts from only a custom HTML template', async 
         assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
         assert.equal(pdf.subarray(Math.max(0, pdf.length - 1024)).includes(Buffer.from('%%EOF')), true);
     } finally {
+        await rm(project, {
+            force: true,
+            recursive: true,
+        });
+    }
+});
+
+test('fails when an allowed-origin resource responds with an HTTP error', async () => {
+    const project = await mkdtemp(join(tmpdir(), 'tooling-browser-renderer-network-failure-'));
+    const server = createServer((_request, response) => {
+        response.writeHead(404, { 'content-type': 'image/png' });
+        response.end();
+    });
+
+    try {
+        await new Promise((resolvePromise) => {
+            server.listen(0, '127.0.0.1', resolvePromise);
+        });
+
+        const address = server.address();
+        assert.notEqual(address, null);
+        assert.equal(typeof address, 'object');
+
+        const origin = `http://127.0.0.1:${String(address.port)}`;
+
+        await writeFile(
+            join(project, 'index.html'),
+            `<!doctype html>
+<html lang="en">
+  <head>
+    <style>body { background-image: url("${origin}/missing.png"); }</style>
+  </head>
+  <body><main data-ready>Network failure</main></body>
+</html>
+`,
+        );
+
+        await assert.rejects(
+            async () =>
+                await execute(
+                    process.execPath,
+                    [cli, 'png', 'generated/card.png', '--template', './index.html', '--allow-origin', origin, '--width', '80', '--height', '40', '--wait-for-selector', '[data-ready]'],
+                    { cwd: project },
+                ),
+            (error) => {
+                assert.match(error.stderr, /HTTP 404/u);
+
+                return true;
+            },
+        );
+    } finally {
+        await new Promise((resolvePromise, rejectPromise) => {
+            server.close((error) => (error === undefined ? resolvePromise() : rejectPromise(error)));
+        });
         await rm(project, {
             force: true,
             recursive: true,

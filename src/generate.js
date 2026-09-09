@@ -123,7 +123,7 @@ ${dataProperties.join('\n')}
 `;
 }
 
-function monitorPageFailures(page) {
+function monitorPageFailures(page, context) {
     const failures = [];
     let reportFirstFailure;
     const firstFailure = new Promise((resolvePromise) => {
@@ -140,23 +140,70 @@ function monitorPageFailures(page) {
     page.on('pageerror', (error) => {
         report(`page: ${error.stack ?? error.message}`);
     });
-    page.on('requestfailed', (request) => {
+    context.on('requestfailed', (request) => {
         report(`request: ${request.url()} (${request.failure()?.errorText ?? 'unknown failure'})`);
+    });
+    context.on('response', (response) => {
+        const status = response.status();
+
+        if (status >= 400) {
+            report(`response: HTTP ${String(status)} ${response.url()}`);
+        }
+    });
+    context.on('page', (popup) => {
+        if (popup === page) {
+            return;
+        }
+
+        report(`popup: unexpected browser page opened at ${popup.url()}`);
+        void popup.close().catch(() => {});
     });
 
     return {
         failures,
         firstFailure,
+        report,
     };
 }
 
-async function configureNetworkAccess(page, allowNetwork) {
-    if (allowNetwork) {
-        return;
+function isAllowedOrigin(location, allowedOrigins) {
+    let url;
+
+    try {
+        url = new URL(location);
+    } catch {
+        return false;
     }
 
-    await page.route(/^https?:\/\//iu, async (route) => {
+    const origin = url.protocol === 'ws:' || url.protocol === 'wss:' ? url.origin.replace(/^(?:ws|wss):/iu, (protocol) => (protocol.toLowerCase() === 'ws:' ? 'http:' : 'https:')) : url.origin;
+
+    return allowedOrigins.has(origin);
+}
+
+async function configureNetworkAccess(context, allowedOrigins, reportNetworkFailure) {
+    const allowed = new Set(allowedOrigins);
+
+    await context.route(/^https?:\/\//iu, async (route) => {
+        if (isAllowedOrigin(route.request().url(), allowed)) {
+            await route.continue();
+
+            return;
+        }
+
         await route.abort('blockedbyclient');
+    });
+    await context.routeWebSocket(/^wss?:\/\//iu, async (websocket) => {
+        if (isAllowedOrigin(websocket.url(), allowed)) {
+            websocket.connectToServer();
+
+            return;
+        }
+
+        reportNetworkFailure(`websocket: network access denied for ${websocket.url()}`);
+        await websocket.close({
+            code: 1008,
+            reason: 'Network access denied',
+        });
     });
 }
 
@@ -393,7 +440,7 @@ async function renderPage(browser, source, options) {
         acceptDownloads: false,
         colorScheme: 'light',
         locale: 'en-US',
-        offline: !options.allowNetwork,
+        offline: options.allowedOrigins.length === 0,
         reducedMotion: 'reduce',
         serviceWorkers: 'block',
         timezoneId: 'UTC',
@@ -411,8 +458,15 @@ async function renderPage(browser, source, options) {
     const context = await browser.newContext(contextOptions);
 
     try {
+        let reportNetworkFailure;
+
+        await configureNetworkAccess(context, options.allowedOrigins, (failure) => {
+            reportNetworkFailure?.(failure);
+        });
+
         const page = await context.newPage();
-        const monitor = monitorPageFailures(page);
+        const monitor = monitorPageFailures(page, context);
+        reportNetworkFailure = monitor.report;
 
         page.setDefaultNavigationTimeout(options.timeout);
         page.setDefaultTimeout(options.timeout);
@@ -423,7 +477,6 @@ async function renderPage(browser, source, options) {
             });
         }
 
-        await configureNetworkAccess(page, options.allowNetwork);
         await failFastOnPageFailure(
             page.goto(pathToFileURL(source).href, {
                 timeout: options.timeout,

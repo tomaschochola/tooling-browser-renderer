@@ -18,7 +18,7 @@ const maximumTimeout = 10 * 60 * 1000;
 const pdfDimensionPattern = /^(?:0|(?:\d+(?:\.\d+)?|\.\d+)(?:px|in|cm|mm))$/u;
 const pdfFormats = new Set(['A0', 'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'Ledger', 'Legal', 'Letter', 'Tabloid']);
 
-const commonOptions = new Set(['allow-network', 'asset', 'data', 'entry', 'template', 'timeout', 'wait-for-selector']);
+const commonOptions = new Set(['allow-origin', 'asset', 'data', 'entry', 'template', 'timeout', 'wait-for-selector']);
 const pdfOptions = new Set([...commonOptions, 'css-page-size', 'format', 'landscape', 'margin']);
 const pngOptions = new Set([...commonOptions, 'height', 'pixel-ratio', 'transparent', 'width']);
 
@@ -36,7 +36,7 @@ Input options:
       --asset NAME=SOURCE       Named asset in browserArtifact.assets; repeatable
       --data NAME=VALUE         Named plain text in browserArtifact.data; repeatable
       --wait-for-selector CSS   Wait until a matching element is attached
-      --allow-network           Permit HTTP and HTTPS requests
+      --allow-origin ORIGIN     Permit requests to an exact HTTP(S) origin; repeatable
       --timeout MILLISECONDS    Per-operation browser timeout (default: 60000)
   -h, --help                    Show this help
 
@@ -54,7 +54,7 @@ PDF options (choose exactly one paper source):
 `;
 
 const argumentOptions = {
-    'allow-network': { type: 'boolean' },
+    'allow-origin': { multiple: true, type: 'string' },
     asset: { multiple: true, type: 'string' },
     'css-page-size': { type: 'boolean' },
     data: { multiple: true, type: 'string' },
@@ -120,6 +120,49 @@ function parseString(value, option) {
 
 function parseEntries(values) {
     return values?.map((entry) => parseString(entry, '--entry')) ?? [];
+}
+
+function isLoopbackHost(hostname) {
+    if (hostname === 'localhost' || hostname === '[::1]' || hostname === '::1') {
+        return true;
+    }
+
+    const octets = hostname.split('.');
+
+    return octets.length === 4 && octets[0] === '127' && octets.every((octet) => /^(?:0|[1-9]\d*)$/u.test(octet) && Number(octet) <= 255);
+}
+
+function parseOrigin(value) {
+    const option = '--allow-origin';
+    const input = parseString(value, option);
+    let origin;
+
+    try {
+        origin = new URL(input);
+    } catch (error) {
+        throw new TypeError(`${option} must be an absolute HTTPS origin or a loopback HTTP origin.`, {
+            cause: error,
+        });
+    }
+
+    const isHttps = origin.protocol === 'https:';
+    const isLoopbackHttp = origin.protocol === 'http:' && isLoopbackHost(origin.hostname);
+
+    if ((!isHttps && !isLoopbackHttp) || origin.username !== '' || origin.password !== '' || origin.pathname !== '/' || origin.search !== '' || origin.hash !== '') {
+        throw new TypeError(`${option} must be an absolute HTTPS origin or a loopback HTTP origin without credentials, path, query, or fragment.`);
+    }
+
+    return origin.origin;
+}
+
+function parseOrigins(values) {
+    const origins = values?.map(parseOrigin) ?? [];
+
+    if (new Set(origins).size !== origins.length) {
+        throw new TypeError('Duplicate allowed network origin.');
+    }
+
+    return origins;
 }
 
 function parseAssignments(values, option, noun, valueName) {
@@ -224,7 +267,7 @@ function parseCommon(values) {
     }
 
     const options = {
-        allowNetwork: values['allow-network'] ?? false,
+        allowedOrigins: parseOrigins(values['allow-origin']),
         entries,
         timeout: parsePositiveInteger(values.timeout, '--timeout', '60000', maximumTimeout),
     };

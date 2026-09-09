@@ -40,6 +40,7 @@ function createBrowser(configuration = {}) {
         contextClosed: false,
         pageActions: [],
         routes: 0,
+        websocketRoutes: 0,
     };
 
     const page = {
@@ -84,6 +85,26 @@ function createBrowser(configuration = {}) {
                     events.get('crash')?.();
                 } else if (event === 'pageerror') {
                     events.get('pageerror')?.(configuration.pageFailure ?? new Error('page failed'));
+                } else if (event === 'same-page') {
+                    events.get('page')?.(page);
+                } else if (event === 'popup') {
+                    events.get('page')?.({
+                        async close() {
+                            if (configuration.popupCloseError) {
+                                throw new Error('popup close failed');
+                            }
+
+                            observations.popupClosed = true;
+                        },
+                        url() {
+                            return 'file:///unexpected-popup.html';
+                        },
+                    });
+                } else if (event === 'response') {
+                    events.get('response')?.({
+                        status: () => configuration.responseStatus ?? 404,
+                        url: () => 'https://example.invalid/resource',
+                    });
                 } else {
                     events.get('requestfailed')?.({
                         failure: () => (Object.hasOwn(configuration, 'requestFailure') ? configuration.requestFailure : { errorText: 'request failed' }),
@@ -121,11 +142,6 @@ function createBrowser(configuration = {}) {
 
             return configuration.pdf ?? createPdf();
         },
-        async route(pattern, listener) {
-            observations.routePattern = pattern;
-            observations.routes += 1;
-            observations.routeListener = listener;
-        },
         async screenshot(options) {
             observations.screenshot = options;
 
@@ -157,6 +173,19 @@ function createBrowser(configuration = {}) {
             }
 
             return page;
+        },
+        async route(pattern, listener) {
+            observations.routePattern = pattern;
+            observations.routes += 1;
+            observations.routeListener = listener;
+        },
+        async routeWebSocket(pattern, listener) {
+            observations.websocketRoutePattern = pattern;
+            observations.websocketRoutes += 1;
+            observations.websocketRouteListener = listener;
+        },
+        on(event, listener) {
+            events.set(event, listener);
         },
     };
 
@@ -208,7 +237,7 @@ async function compilePage(observations, options) {
 
 function pngOptions(project) {
     return {
-        allowNetwork: false,
+        allowedOrigins: [],
         entries: [project.entry],
         output: join(project.directory, 'generated/card.png'),
         pixelRatio: 2,
@@ -225,7 +254,7 @@ function pngOptions(project) {
 
 function pdfOptions(project, paper) {
     return {
-        allowNetwork: true,
+        allowedOrigins: ['https://example.com'],
         entries: [project.entry],
         landscape: false,
         margin: {
@@ -243,7 +272,7 @@ function pdfOptions(project, paper) {
 
 test('builds and atomically publishes an exact PNG without deleting siblings', async () => {
     const project = await createProject();
-    const browser = createBrowser();
+    const browser = createBrowser({ events: ['same-page', 'response'], responseStatus: 200 });
     const observations = browser.observations;
     const sibling = join(project.directory, 'generated/sibling.txt');
     const output = join(project.directory, 'generated/card.png');
@@ -277,6 +306,7 @@ test('builds and atomically publishes an exact PNG without deleting siblings', a
             },
         });
         assert.equal(observations.routes, 1);
+        assert.equal(observations.websocketRoutes, 1);
         assert.equal(observations.selector, '[data-ready]');
         assert.deepEqual(observations.selectorOptions, { state: 'attached' });
         assert.equal(observations.navigationTimeout, 1000);
@@ -301,11 +331,52 @@ test('builds and atomically publishes an exact PNG without deleting siblings', a
         let abortReason;
 
         await observations.routeListener({
+            request() {
+                return {
+                    url() {
+                        return 'https://example.com/allowed.css';
+                    },
+                };
+            },
             async abort(reason) {
                 abortReason = reason;
             },
+            async continue() {
+                throw new Error('The blocked route unexpectedly continued.');
+            },
         });
         assert.equal(abortReason, 'blockedbyclient');
+
+        await observations.routeListener({
+            request() {
+                return {
+                    url() {
+                        return 'not-a-url';
+                    },
+                };
+            },
+            async abort(reason) {
+                assert.equal(reason, 'blockedbyclient');
+            },
+            async continue() {
+                throw new Error('The invalid route unexpectedly continued.');
+            },
+        });
+
+        let websocketClose;
+
+        await observations.websocketRouteListener({
+            url() {
+                return 'ws://example.invalid/socket';
+            },
+            async close(options) {
+                websocketClose = options;
+            },
+            connectToServer() {
+                throw new Error('The blocked WebSocket unexpectedly connected.');
+            },
+        });
+        assert.deepEqual(websocketClose, { code: 1008, reason: 'Network access denied' });
     } finally {
         await rm(project.directory, { force: true, recursive: true });
     }
@@ -325,7 +396,7 @@ test('routes assets and plain-text data through a generated Webpack bootstrap', 
 
         const options = {
             ...pngOptions(project),
-            allowNetwork: true,
+            allowedOrigins: ['https://example.com'],
             assets: {
                 background: 'https://example.com/background.png',
                 icon: 'data:image/svg+xml,%3Csvg/%3E',
@@ -363,6 +434,39 @@ globalThis.browserArtifact = {
 `,
         );
         assert.equal(observations.context.offline, false);
+        let continued;
+
+        await observations.routeListener({
+            request() {
+                return {
+                    url() {
+                        return 'https://example.com/allowed.css';
+                    },
+                };
+            },
+            async continue() {
+                continued = true;
+            },
+            async abort() {
+                throw new Error('The allowed route unexpectedly aborted.');
+            },
+        });
+        assert.equal(continued, true);
+
+        let connected;
+
+        await observations.websocketRouteListener({
+            url() {
+                return 'wss://example.com/socket';
+            },
+            connectToServer() {
+                connected = true;
+            },
+            async close() {
+                throw new Error('The allowed WebSocket unexpectedly closed.');
+            },
+        });
+        assert.equal(connected, true);
         assert.deepEqual(await readFile(options.output), createPng(128, 64));
         await assert.rejects(async () => await stat(assetBootstrap));
     } finally {
@@ -797,7 +901,8 @@ test('builds PDF artifacts for format-owned and CSS-owned paper geometry', async
 
             assert.deepEqual(observations.compile.entries, [project.entry]);
             assert.deepEqual(observations.entryContents, ['document.body.textContent = "artifact";\n']);
-            assert.equal(observations.routes, 0);
+            assert.equal(observations.routes, 1);
+            assert.equal(observations.websocketRoutes, 1);
             assert.deepEqual(observations.media, { media: 'print' });
             assert.deepEqual(observations.pageActions, ['emulateMedia', 'goto', 'waitForLoadState']);
             assert.deepEqual(observations.context, {
@@ -838,6 +943,18 @@ test('reports browser failures and always closes browser resources', async () =>
             {
                 configuration: { events: ['crash', 'pageerror', 'requestfailed'] },
                 expectation: /page crashed.*page failed.*request failed/su,
+            },
+            {
+                configuration: { events: ['response'] },
+                expectation: /HTTP 404 https:\/\/example\.invalid\/resource/u,
+            },
+            {
+                configuration: { events: ['popup'] },
+                expectation: /unexpected browser page opened at file:\/\/\/unexpected-popup\.html/u,
+            },
+            {
+                configuration: { events: ['popup'], popupCloseError: true },
+                expectation: /unexpected browser page opened at file:\/\/\/unexpected-popup\.html/u,
             },
             {
                 configuration: {
