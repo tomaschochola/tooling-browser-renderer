@@ -1,8 +1,14 @@
-# syntax=docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
+# syntax=docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
 
-FROM mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
+FROM docker.io/library/node:24-trixie@sha256:f7d34e58713740f9eef9092c0bd6ff10369d132f7238399a4b270f16d47fa608
 
 USER root
+
+RUN groupadd --gid 1000 ubuntu \
+    && useradd --uid 1000 --gid ubuntu --shell /bin/bash --create-home ubuntu
+
+RUN npx --yes playwright@1.63.0 install --with-deps chromium firefox webkit \
+    && rm -rf /root/.npm /var/lib/apt/lists/*
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes --no-install-recommends \
@@ -18,5 +24,6 @@ RUN apt-get update \
 
 ENV NPM_CONFIG_PREFIX=/home/ubuntu/.local
 ENV PATH=/home/ubuntu/.local/bin:${PATH}
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 USER ubuntu
