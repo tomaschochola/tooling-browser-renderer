@@ -23,34 +23,34 @@ const pdfOptions = new Set([...commonOptions, 'css-page-size', 'format', 'landsc
 const pngOptions = new Set([...commonOptions, 'height', 'pixel-ratio', 'transparent', 'width']);
 
 export const help = `Usage:
-  tooling-browser-renderer png OUTPUT [--template REQUEST] [--entry REQUEST ...] [OPTIONS]
-  tooling-browser-renderer pdf OUTPUT [--template REQUEST] [--entry REQUEST ...] [OPTIONS]
+    tooling-browser-renderer png OUTPUT [--template REQUEST] [--entry REQUEST ...] [OPTIONS]
+    tooling-browser-renderer pdf OUTPUT [--template REQUEST] [--entry REQUEST ...] [OPTIONS]
 
 Build an HTML template and optional Webpack entries, then render one deterministic browser artifact.
 At least one template or entry is required.
 Entries execute in the supplied order. Named inputs are exposed on globalThis.browserArtifact.
 
 Input options:
-      --template REQUEST        HTML template (default: built-in template)
-      --entry REQUEST           Optional Webpack entry; repeatable
-      --asset NAME=SOURCE       Named asset in browserArtifact.assets; repeatable
-      --data NAME=VALUE         Named plain text in browserArtifact.data; repeatable
-      --wait-for-selector CSS   Wait until a matching element is attached
-      --allow-origin ORIGIN     Permit requests to an exact HTTP(S) origin; repeatable
-      --timeout MILLISECONDS    Per-operation browser timeout (default: 60000)
-  -h, --help                    Show this help
+        --template REQUEST        HTML template (default: built-in template)
+        --entry REQUEST           Optional Webpack entry; repeatable
+        --asset NAME=SOURCE       Named asset in browserArtifact.assets; repeatable
+        --data NAME=VALUE         Named plain text in browserArtifact.data; repeatable
+        --wait-for-selector CSS   Wait until a matching element is attached
+        --allow-origin ORIGIN     Permit requests to an exact HTTP(S) origin; repeatable
+        --timeout MILLISECONDS    Per-operation browser timeout (default: 60000)
+    -h, --help                    Show this help
 
 PNG options:
-      --width PIXELS            CSS viewport width
-      --height PIXELS           CSS viewport height
-      --pixel-ratio NUMBER      Device pixels per CSS pixel (default: 1)
-      --transparent             Preserve a transparent background
+        --width PIXELS            CSS viewport width
+        --height PIXELS           CSS viewport height
+        --pixel-ratio NUMBER      Device pixels per CSS pixel (default: 1)
+        --transparent             Preserve a transparent background
 
 PDF options (choose exactly one paper source):
-      --format FORMAT           A0-A6, Ledger, Legal, Letter, or Tabloid
-      --css-page-size           Use size and margins declared by CSS @page
-      --margin DIMENSIONS       CSS shorthand: top [right] [bottom] [left]
-      --landscape               Use landscape orientation
+        --format FORMAT           A0-A6, Ledger, Legal, Letter, or Tabloid
+        --css-page-size           Use size and margins declared by CSS @page
+        --margin DIMENSIONS       CSS shorthand: top [right] [bottom] [left]
+        --landscape               Use landscape orientation
 `;
 
 const argumentOptions = {

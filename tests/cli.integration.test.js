@@ -35,13 +35,13 @@ test('renders optimized HTML, JavaScript, SCSS, PNG, and PDF through the public 
             join(project, 'index.html'),
             `<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Browser artifact</title>
-  </head>
-  <body>
-    <main data-artifact-root></main>
-  </body>
+    <head>
+        <meta charset="utf-8" />
+        <title>Browser artifact</title>
+    </head>
+    <body>
+        <main data-artifact-root></main>
+    </body>
 </html>
 `,
         );
@@ -50,7 +50,7 @@ test('renders optimized HTML, JavaScript, SCSS, PNG, and PDF through the public 
             `const root: HTMLElement | null = document.querySelector('[data-artifact-root]');
 
 if (root === null) {
-  throw new Error('The custom HTML template was not used.');
+    throw new Error('The custom HTML template was not used.');
 }
 
 const heading: HTMLHeadingElement = document.createElement('h1');
@@ -60,23 +60,23 @@ heading.textContent = browserArtifact.data.title;
 root.replaceChildren(heading);
 
 requestAnimationFrame(() => {
-  if (getComputedStyle(document.body).backgroundColor !== 'rgb(18, 52, 86)') {
-    throw new Error('SCSS was not applied.');
-  }
+    if (getComputedStyle(document.body).backgroundColor !== 'rgb(18, 52, 86)') {
+        throw new Error('SCSS was not applied.');
+    }
 
-  heading.dataset.ready = '';
+    heading.dataset.ready = '';
 });
 `,
         );
         await writeFile(
             join(project, 'artifact.scss'),
             `body {
-  align-items: center;
-  background: #123456;
-  color: #ffffff;
-  display: flex;
-  justify-content: center;
-  margin: 0;
+    align-items: center;
+    background: #123456;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    margin: 0;
 }
 `,
         );
@@ -91,7 +91,7 @@ document.body.replaceChildren(heading);
         await writeFile(
             join(project, 'document.scss'),
             `@page {
-  size: 100mm 50mm;
+    size: 100mm 50mm;
 }
 `,
         );
@@ -145,13 +145,13 @@ test('renders PNG and A4 PDF artifacts from only a custom HTML template', async 
             join(project, 'index.html'),
             `<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Template-only PDF</title>
-  </head>
-  <body>
-    <main data-ready>Template-only PDF</main>
-  </body>
+    <head>
+        <meta charset="utf-8" />
+        <title>Template-only PDF</title>
+    </head>
+    <body>
+        <main data-ready>Template-only PDF</main>
+    </body>
 </html>
 `,
         );
@@ -195,10 +195,10 @@ test('fails when an allowed-origin resource responds with an HTTP error', async 
             join(project, 'index.html'),
             `<!doctype html>
 <html lang="en">
-  <head>
-    <style>body { background-image: url("${origin}/missing.png"); }</style>
-  </head>
-  <body><main data-ready>Network failure</main></body>
+    <head>
+        <style>body { background-image: url("${origin}/missing.png"); }</style>
+    </head>
+    <body><main data-ready>Network failure</main></body>
 </html>
 `,
         );
@@ -234,32 +234,32 @@ test('renders the extensible Open Graph product from named assets and plain-text
         await writeFile(
             join(project, 'logo.svg'),
             `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="18" fill="#f9ca24" />
-  <path d="M22 28h56v12H22zm0 32h56v12H22z" fill="#101114" />
+    <rect width="100" height="100" rx="18" fill="#f9ca24" />
+    <path d="M22 28h56v12H22zm0 32h56v12H22z" fill="#101114" />
 </svg>
 `,
         );
         await writeFile(
             join(project, 'open-graph.css'),
             `.open-graph {
-  background: #123456;
+    background: #123456;
 }
 
 .open-graph-content {
-  font-size: 72px;
-  gap: 32px;
+    font-size: 72px;
+    gap: 32px;
 }
 
 .open-graph-line:nth-child(1) {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 .open-graph-line:nth-child(2) {
-  color: #f9ca24;
+    color: #f9ca24;
 }
 
 .open-graph-line:nth-child(3) {
-  color: #9ad5ff;
+    color: #9ad5ff;
 }
 `,
         );
@@ -268,19 +268,19 @@ test('renders the extensible Open Graph product from named assets and plain-text
             `const tolerance = 1;
 
 function assertClose(actual, expected, message) {
-  if (Math.abs(actual - expected) > tolerance) {
-    throw new Error(\`${'${message}'}: expected ${'${String(expected)}'}, received ${'${String(actual)}'}.\`);
-  }
+    if (Math.abs(actual - expected) > tolerance) {
+        throw new Error(\`${'${message}'}: expected ${'${String(expected)}'}, received ${'${String(actual)}'}.\`);
+    }
 }
 
 function assertBefore(first, second, message) {
-  if (first >= second) {
-    throw new Error(message);
-  }
+    if (first >= second) {
+        throw new Error(message);
+    }
 }
 
 void globalThis.browserArtifact.ready.then(() => {
-  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
     const container = document.querySelector('.open-graph');
     const content = document.querySelector('.open-graph-content');
     const envelope = document.querySelector('.open-graph-envelope');
@@ -289,27 +289,27 @@ void globalThis.browserArtifact.ready.then(() => {
     const lines = [...document.querySelectorAll('.open-graph-line')];
 
     if (lines.map((line) => line.textContent).join('|') !== 'Městysané|Bouchalka|Zlonice') {
-      throw new Error('The product did not preserve the three explicit text rows.');
+        throw new Error('The product did not preserve the three explicit text rows.');
     }
 
     if (container.dataset.openGraphImageRows !== '2' || container.dataset.openGraphTextPosition !== 'right') {
-      throw new Error('The product did not apply its default layout.');
+        throw new Error('The product did not apply its default layout.');
     }
 
     if (container.dataset.openGraphScale !== 'static' || !document.documentElement.hasAttribute('data-browser-artifact-ready')) {
-      throw new Error('The product did not expose its completed static layout.');
+        throw new Error('The product did not expose its completed static layout.');
     }
 
     if (!document.fonts.check('900 72px "Inter Tight Variable"')) {
-      throw new Error('The bundled Inter Tight Variable font is not available.');
+        throw new Error('The bundled Inter Tight Variable font is not available.');
     }
 
     if (getComputedStyle(container).backgroundColor !== 'rgb(18, 52, 86)') {
-      throw new Error('The consumer stylesheet did not override the product background.');
+        throw new Error('The consumer stylesheet did not override the product background.');
     }
 
     if (lines.map((line) => getComputedStyle(line).color).join('|') !== 'rgb(255, 255, 255)|rgb(249, 202, 36)|rgb(154, 213, 255)') {
-      throw new Error('The consumer stylesheet did not independently style each text row.');
+        throw new Error('The consumer stylesheet did not independently style each text row.');
     }
 
     const containerBounds = container.getBoundingClientRect();
@@ -354,7 +354,7 @@ void globalThis.browserArtifact.ready.then(() => {
 
     container.dataset.openGraphImageRows = '2';
     container.dataset.ready = '';
-  });
+    });
 });
 `,
         );
@@ -363,43 +363,43 @@ void globalThis.browserArtifact.ready.then(() => {
             `const productReady = globalThis.browserArtifact.ready;
 
 globalThis.browserArtifact.ready = productReady.then(() => {
-  const container = document.querySelector('.open-graph');
-  const content = document.querySelector('.open-graph-content');
-  const envelope = document.querySelector('.open-graph-envelope');
-  const image = document.querySelector('.open-graph-image');
-  const lines = [...document.querySelectorAll('.open-graph-line')];
+    const container = document.querySelector('.open-graph');
+    const content = document.querySelector('.open-graph-content');
+    const envelope = document.querySelector('.open-graph-envelope');
+    const image = document.querySelector('.open-graph-image');
+    const lines = [...document.querySelectorAll('.open-graph-line')];
 
-  function fitsEnvelope() {
-    const contentBounds = content.getBoundingClientRect();
+    function fitsEnvelope() {
+        const contentBounds = content.getBoundingClientRect();
 
-    return contentBounds.height <= envelope.clientHeight && contentBounds.width <= envelope.clientWidth && content.scrollHeight <= envelope.clientHeight && content.scrollWidth <= envelope.clientWidth;
-  }
+        return contentBounds.height <= envelope.clientHeight && contentBounds.width <= envelope.clientWidth && content.scrollHeight <= envelope.clientHeight && content.scrollWidth <= envelope.clientWidth;
+    }
 
-  if (container.dataset.openGraphScale !== 'auto') {
-    throw new Error('The product did not expose its completed automatic layout.');
-  }
+    if (container.dataset.openGraphScale !== 'auto') {
+        throw new Error('The product did not expose its completed automatic layout.');
+    }
 
-  if (!fitsEnvelope()) {
-    throw new Error('The automatic layout exceeds its two-dimensional envelope.');
-  }
+    if (!fitsEnvelope()) {
+        throw new Error('The automatic layout exceeds its two-dimensional envelope.');
+    }
 
-  const selectedFontSize = Number.parseFloat(getComputedStyle(content).fontSize);
+    const selectedFontSize = Number.parseFloat(getComputedStyle(content).fontSize);
 
-  content.style.fontSize = String(selectedFontSize + 1) + 'px';
+    content.style.fontSize = String(selectedFontSize + 1) + 'px';
 
-  if (fitsEnvelope()) {
-    throw new Error('The automatic layout did not select the largest fitting integer font size.');
-  }
+    if (fitsEnvelope()) {
+        throw new Error('The automatic layout did not select the largest fitting integer font size.');
+    }
 
-  content.style.fontSize = String(selectedFontSize) + 'px';
+    content.style.fontSize = String(selectedFontSize) + 'px';
 
-  const imageBounds = image.getBoundingClientRect();
-  const firstLineBounds = lines[0].getBoundingClientRect();
-  const lastCoveredLineBounds = lines[Number(container.dataset.openGraphImageRows) - 1].getBoundingClientRect();
+    const imageBounds = image.getBoundingClientRect();
+    const firstLineBounds = lines[0].getBoundingClientRect();
+    const lastCoveredLineBounds = lines[Number(container.dataset.openGraphImageRows) - 1].getBoundingClientRect();
 
-  if (Math.abs(imageBounds.height - (lastCoveredLineBounds.bottom - firstLineBounds.top)) > 1 || Math.abs(imageBounds.top - firstLineBounds.top) > 1) {
-    throw new Error('The automatically scaled image does not cover and align with its configured text rows.');
-  }
+    if (Math.abs(imageBounds.height - (lastCoveredLineBounds.bottom - firstLineBounds.top)) > 1 || Math.abs(imageBounds.top - firstLineBounds.top) > 1) {
+        throw new Error('The automatically scaled image does not cover and align with its configured text rows.');
+    }
 });
 `,
         );
