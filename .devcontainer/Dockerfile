@@ -4,8 +4,9 @@ FROM docker.io/library/node:24-trixie@sha256:f7d34e58713740f9eef9092c0bd6ff10369
 
 USER root
 
-RUN groupadd --gid 1000 ubuntu \
-    && useradd --uid 1000 --gid ubuntu --shell /bin/bash --create-home ubuntu
+ENV NPM_CONFIG_PREFIX=/home/node/.local
+ENV PATH=/home/node/.local/bin:${PATH}
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 RUN npx --yes playwright@1.63.0 install --with-deps chromium firefox webkit \
     && rm -rf /root/.npm /var/lib/apt/lists/*
@@ -13,17 +14,13 @@ RUN npx --yes playwright@1.63.0 install --with-deps chromium firefox webkit \
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes --no-install-recommends \
     && DEBIAN_FRONTEND=noninteractive apt-get install --yes --no-install-recommends make sudo \
-    && install --directory --owner ubuntu --group ubuntu \
-        /home/ubuntu/.local \
-        /home/ubuntu/.local/bin \
-        /home/ubuntu/.local/lib \
-        /home/ubuntu/.local/lib/node_modules \
-    && printf '%s\n' 'ubuntu ALL=(root) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu \
-    && chmod 0440 /etc/sudoers.d/ubuntu \
+    && install --directory --owner node --group node \
+        /home/node/.local \
+        /home/node/.local/bin \
+        /home/node/.local/lib \
+        /home/node/.local/lib/node_modules \
+    && printf '%s\n' 'node ALL=(root) NOPASSWD:ALL' > /etc/sudoers.d/node \
+    && chmod 0440 /etc/sudoers.d/node \
     && rm -rf /var/lib/apt/lists/*
 
-ENV NPM_CONFIG_PREFIX=/home/ubuntu/.local
-ENV PATH=/home/ubuntu/.local/bin:${PATH}
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-
-USER ubuntu
+USER node

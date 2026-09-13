@@ -15,7 +15,7 @@
     },
     "init": true,
     "postCreateCommand": ["make", "postcreate"],
-    "remoteUser": "ubuntu",
+    "remoteUser": "node",
     "runArgs": ["--ipc=host"],
     "updateRemoteUserUID": true,
     "userEnvProbe": "none",
