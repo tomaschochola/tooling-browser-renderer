@@ -112,7 +112,6 @@ body {
     display: none;
 }
 
-:where(.open-graph:not([data-open-graph-line-count='0'])[data-open-graph-text-position='left'], .open-graph:not([data-open-graph-line-count='0'])[data-open-graph-text-position='right'])
-    .open-graph-image {
+:where(.open-graph:not([data-open-graph-line-count='0'])[data-open-graph-text-position='left'], .open-graph:not([data-open-graph-line-count='0'])[data-open-graph-text-position='right']) .open-graph-image {
     align-self: flex-start;
 }

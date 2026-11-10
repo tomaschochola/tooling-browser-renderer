@@ -18,63 +18,28 @@ test('describes both explicit artifact commands and the public input model', () 
 });
 
 test('parses a complete PNG command', () => {
-    assert.deepEqual(
-        parseArguments([
-            'png',
-            'generated/card.png',
-            '--entry',
-            './card.tsx',
-            '--entry',
-            '@scope/package/product',
-            '--asset',
-            'image=logo.svg',
-            '--asset',
-            'background=https://example.com/background.png',
-            '--data',
-            'open-graph-line-1=Městysané',
-            '--data',
-            'query=a=b',
-            '--width',
-            '600',
-            '--height',
-            '315',
-            '--pixel-ratio',
-            '2',
-            '--transparent',
-            '--wait-for-selector',
-            '[data-ready]',
-            '--allow-origin',
-            'https://example.com',
-            '--allow-origin',
-            'http://127.0.0.1:63010',
-            '--allow-origin',
-            'http://localhost',
-            '--timeout',
-            '120000',
-        ]),
-        {
-            allowedOrigins: ['https://example.com', 'http://127.0.0.1:63010', 'http://localhost'],
-            assets: {
-                background: 'https://example.com/background.png',
-                image: 'logo.svg',
-            },
-            data: {
-                'open-graph-line-1': 'Městysané',
-                query: 'a=b',
-            },
-            entries: ['./card.tsx', '@scope/package/product'],
-            output: 'generated/card.png',
-            pixelRatio: 2,
-            timeout: 120_000,
-            transparent: true,
-            type: 'png',
-            viewport: {
-                height: 315,
-                width: 600,
-            },
-            waitForSelector: '[data-ready]',
+    assert.deepEqual(parseArguments(['png', 'generated/card.png', '--entry', './card.tsx', '--entry', '@scope/package/product', '--asset', 'image=logo.svg', '--asset', 'background=https://example.com/background.png', '--data', 'open-graph-line-1=Městysané', '--data', 'query=a=b', '--width', '600', '--height', '315', '--pixel-ratio', '2', '--transparent', '--wait-for-selector', '[data-ready]', '--allow-origin', 'https://example.com', '--allow-origin', 'http://127.0.0.1:63010', '--allow-origin', 'http://localhost', '--timeout', '120000']), {
+        allowedOrigins: ['https://example.com', 'http://127.0.0.1:63010', 'http://localhost'],
+        assets: {
+            background: 'https://example.com/background.png',
+            image: 'logo.svg',
         },
-    );
+        data: {
+            'open-graph-line-1': 'Městysané',
+            'query': 'a=b',
+        },
+        entries: ['./card.tsx', '@scope/package/product'],
+        output: 'generated/card.png',
+        pixelRatio: 2,
+        timeout: 120_000,
+        transparent: true,
+        type: 'png',
+        viewport: {
+            height: 315,
+            width: 600,
+        },
+        waitForSelector: '[data-ready]',
+    });
 });
 
 test('applies PNG defaults', () => {
@@ -169,10 +134,7 @@ const invalidArguments = [
     [['png', 'card.png', '--entry', './card.js', '--allow-origin', 'ftp://example.com', '--width', '10', '--height', '10'], /absolute HTTPS origin or a loopback HTTP origin/u],
     [['png', 'card.png', '--entry', './card.js', '--allow-origin', 'https://example.com/path', '--width', '10', '--height', '10'], /without credentials, path, query, or fragment/u],
     [['png', 'card.png', '--entry', './card.js', '--allow-origin', 'not-an-url', '--width', '10', '--height', '10'], /absolute HTTPS origin or a loopback HTTP origin/u],
-    [
-        ['png', 'card.png', '--entry', './card.js', '--allow-origin', 'https://example.com', '--allow-origin', 'https://example.com', '--width', '10', '--height', '10'],
-        /Duplicate allowed network origin/u,
-    ],
+    [['png', 'card.png', '--entry', './card.js', '--allow-origin', 'https://example.com', '--allow-origin', 'https://example.com', '--width', '10', '--height', '10'], /Duplicate allowed network origin/u],
     [['png', 'card.png', '--entry', './card.js', '--width', '0', '--height', '10'], /--width must be a positive integer/u],
     [['png', 'card.png', '--entry', './card.js', '--height', '10'], /--width must be a positive integer/u],
     [['png', 'card.png', '--entry', './card.js', '--width', '16385', '--height', '10'], /--width must not exceed/u],

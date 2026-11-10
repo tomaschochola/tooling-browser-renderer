@@ -492,19 +492,13 @@ async function renderPage(browser, source, options) {
 
         await failFastOnPageFailure(evaluateBrowserFramesWithTimeout(page, disableBrowserMotion, options.timeout, 'Browser artifact motion disabling did not complete'), monitor);
 
-        const activeAnimationsAfterDisable = await failFastOnPageFailure(
-            evaluateBrowserFramesWithTimeout(page, inspectActiveBrowserAnimations, options.timeout, 'Browser artifact motion inspection did not complete'),
-            monitor,
-        );
+        const activeAnimationsAfterDisable = await failFastOnPageFailure(evaluateBrowserFramesWithTimeout(page, inspectActiveBrowserAnimations, options.timeout, 'Browser artifact motion inspection did not complete'), monitor);
 
         assertNoActiveBrowserAnimations(activeAnimationsAfterDisable.reduce((total, count) => total + count, 0));
 
         await failFastOnPageFailure(waitForResources(page, options.timeout), monitor);
 
-        const activeAnimationsBeforeCapture = await failFastOnPageFailure(
-            evaluateBrowserFramesWithTimeout(page, inspectActiveBrowserAnimations, options.timeout, 'Browser artifact motion inspection did not complete'),
-            monitor,
-        );
+        const activeAnimationsBeforeCapture = await failFastOnPageFailure(evaluateBrowserFramesWithTimeout(page, inspectActiveBrowserAnimations, options.timeout, 'Browser artifact motion inspection did not complete'), monitor);
 
         assertNoActiveBrowserAnimations(activeAnimationsBeforeCapture.reduce((total, count) => total + count, 0));
 

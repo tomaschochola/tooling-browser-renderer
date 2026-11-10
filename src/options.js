@@ -43,21 +43,21 @@ PDF options (choose exactly one paper source):
 
 const argumentOptions = {
     'allow-origin': { multiple: true, type: 'string' },
-    asset: { multiple: true, type: 'string' },
+    'asset': { multiple: true, type: 'string' },
     'css-page-size': { type: 'boolean' },
-    data: { multiple: true, type: 'string' },
-    entry: { multiple: true, type: 'string' },
-    format: { type: 'string' },
-    height: { type: 'string' },
-    help: { short: 'h', type: 'boolean' },
-    landscape: { type: 'boolean' },
-    margin: { type: 'string' },
+    'data': { multiple: true, type: 'string' },
+    'entry': { multiple: true, type: 'string' },
+    'format': { type: 'string' },
+    'height': { type: 'string' },
+    'help': { short: 'h', type: 'boolean' },
+    'landscape': { type: 'boolean' },
+    'margin': { type: 'string' },
     'pixel-ratio': { type: 'string' },
-    template: { type: 'string' },
-    timeout: { type: 'string' },
-    transparent: { type: 'boolean' },
+    'template': { type: 'string' },
+    'timeout': { type: 'string' },
+    'transparent': { type: 'boolean' },
     'wait-for-selector': { type: 'string' },
-    width: { type: 'string' },
+    'width': { type: 'string' },
 };
 
 function parsePositiveInteger(value, option, defaultValue, maximum = maximumDimension) {

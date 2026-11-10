@@ -83,31 +83,7 @@ document.body.replaceChildren(heading);
 }
 `,
         );
-        await execute(
-            process.execPath,
-            [
-                cli,
-                'png',
-                'generated/card.png',
-                '--template',
-                './index.html',
-                '--entry',
-                './artifact.ts',
-                '--entry',
-                './artifact.scss',
-                '--data',
-                'title=Browser artifact',
-                '--width',
-                '80',
-                '--height',
-                '40',
-                '--pixel-ratio',
-                '2',
-                '--wait-for-selector',
-                '[data-ready]',
-            ],
-            { cwd: project },
-        );
+        await execute(process.execPath, [cli, 'png', 'generated/card.png', '--template', './index.html', '--entry', './artifact.ts', '--entry', './artifact.scss', '--data', 'title=Browser artifact', '--width', '80', '--height', '40', '--pixel-ratio', '2', '--wait-for-selector', '[data-ready]'], { cwd: project });
         await execute(process.execPath, [cli, 'pdf', 'generated/document.pdf', '--entry', './document.js', '--entry', './document.scss', '--css-page-size'], { cwd: project });
         const png = await readFile(join(project, 'generated/card.png'));
         const pdf = await readFile(join(project, 'generated/document.pdf'));
@@ -192,12 +168,7 @@ test('fails when an allowed-origin resource responds with an HTTP error', async 
         );
 
         await assert.rejects(
-            async () =>
-                await execute(
-                    process.execPath,
-                    [cli, 'png', 'generated/card.png', '--template', './index.html', '--allow-origin', origin, '--width', '80', '--height', '40', '--wait-for-selector', '[data-ready]'],
-                    { cwd: project },
-                ),
+            async () => await execute(process.execPath, [cli, 'png', 'generated/card.png', '--template', './index.html', '--allow-origin', origin, '--width', '80', '--height', '40', '--wait-for-selector', '[data-ready]'], { cwd: project }),
             (error) => {
                 assert.match(error.stderr, /HTTP 404/u);
 
@@ -397,123 +368,11 @@ globalThis.browserArtifact.ready = productReady.then(() => {
         await mkdir(packageScope, { recursive: true });
         await symlink(packageRoot, join(packageScope, 'tooling-browser-renderer'), 'dir');
 
-        await execute(
-            process.execPath,
-            [cli, 'png', 'generated/logo-only.png', '--entry', '@tomaschochola/tooling-browser-renderer/products/open-graph', '--asset', 'image=logo.svg', '--width', '1200', '--height', '630'],
-            { cwd: project },
-        );
-        await execute(
-            process.execPath,
-            [
-                cli,
-                'png',
-                'generated/three-lines.png',
-                '--entry',
-                '@tomaschochola/tooling-browser-renderer/products/open-graph',
-                '--entry',
-                './open-graph.css',
-                '--entry',
-                './open-graph-check.js',
-                '--asset',
-                'image=logo.svg',
-                '--data',
-                'open-graph-line-1=Městysané',
-                '--data',
-                'open-graph-line-2=Bouchalka',
-                '--data',
-                'open-graph-line-3=Zlonice',
-                '--data',
-                'open-graph-scale=static',
-                '--width',
-                '1200',
-                '--height',
-                '630',
-                '--wait-for-selector',
-                '[data-ready]',
-            ],
-            { cwd: project },
-        );
-        await execute(
-            process.execPath,
-            [
-                cli,
-                'png',
-                'generated/auto.png',
-                '--entry',
-                '@tomaschochola/tooling-browser-renderer/products/open-graph',
-                '--entry',
-                './open-graph.css',
-                '--entry',
-                './open-graph-auto-check.js',
-                '--asset',
-                'image=logo.svg',
-                '--data',
-                'open-graph-line-1=ŠpS',
-                '--data',
-                'open-graph-scale=auto',
-                '--width',
-                '1200',
-                '--height',
-                '630',
-            ],
-            { cwd: project },
-        );
-        await execute(
-            process.execPath,
-            [
-                cli,
-                'png',
-                'generated/auto-long.png',
-                '--entry',
-                '@tomaschochola/tooling-browser-renderer/products/open-graph',
-                '--entry',
-                './open-graph.css',
-                '--entry',
-                './open-graph-auto-check.js',
-                '--asset',
-                'image=logo.svg',
-                '--data',
-                'open-graph-line-1=MĚSTYSANÉ PRO ZLONICE',
-                '--data',
-                'open-graph-scale=auto',
-                '--width',
-                '1200',
-                '--height',
-                '630',
-            ],
-            { cwd: project },
-        );
-        await execute(
-            process.execPath,
-            [
-                cli,
-                'png',
-                'generated/auto-three-rows.png',
-                '--entry',
-                '@tomaschochola/tooling-browser-renderer/products/open-graph',
-                '--entry',
-                './open-graph.css',
-                '--entry',
-                './open-graph-auto-check.js',
-                '--asset',
-                'image=logo.svg',
-                '--data',
-                'open-graph-image-rows=3',
-                '--data',
-                'open-graph-line-1=BOUCHALKA.',
-                '--data',
-                'open-graph-line-2=ZLONICE.',
-                '--data',
-                'open-graph-line-3=TICHO.',
-                '--data',
-                'open-graph-scale=auto',
-                '--width',
-                '1200',
-                '--height',
-                '630',
-            ],
-            { cwd: project },
-        );
+        await execute(process.execPath, [cli, 'png', 'generated/logo-only.png', '--entry', '@tomaschochola/tooling-browser-renderer/products/open-graph', '--asset', 'image=logo.svg', '--width', '1200', '--height', '630'], { cwd: project });
+        await execute(process.execPath, [cli, 'png', 'generated/three-lines.png', '--entry', '@tomaschochola/tooling-browser-renderer/products/open-graph', '--entry', './open-graph.css', '--entry', './open-graph-check.js', '--asset', 'image=logo.svg', '--data', 'open-graph-line-1=Městysané', '--data', 'open-graph-line-2=Bouchalka', '--data', 'open-graph-line-3=Zlonice', '--data', 'open-graph-scale=static', '--width', '1200', '--height', '630', '--wait-for-selector', '[data-ready]'], { cwd: project });
+        await execute(process.execPath, [cli, 'png', 'generated/auto.png', '--entry', '@tomaschochola/tooling-browser-renderer/products/open-graph', '--entry', './open-graph.css', '--entry', './open-graph-auto-check.js', '--asset', 'image=logo.svg', '--data', 'open-graph-line-1=ŠpS', '--data', 'open-graph-scale=auto', '--width', '1200', '--height', '630'], { cwd: project });
+        await execute(process.execPath, [cli, 'png', 'generated/auto-long.png', '--entry', '@tomaschochola/tooling-browser-renderer/products/open-graph', '--entry', './open-graph.css', '--entry', './open-graph-auto-check.js', '--asset', 'image=logo.svg', '--data', 'open-graph-line-1=MĚSTYSANÉ PRO ZLONICE', '--data', 'open-graph-scale=auto', '--width', '1200', '--height', '630'], { cwd: project });
+        await execute(process.execPath, [cli, 'png', 'generated/auto-three-rows.png', '--entry', '@tomaschochola/tooling-browser-renderer/products/open-graph', '--entry', './open-graph.css', '--entry', './open-graph-auto-check.js', '--asset', 'image=logo.svg', '--data', 'open-graph-image-rows=3', '--data', 'open-graph-line-1=BOUCHALKA.', '--data', 'open-graph-line-2=ZLONICE.', '--data', 'open-graph-line-3=TICHO.', '--data', 'open-graph-scale=auto', '--width', '1200', '--height', '630'], { cwd: project });
 
         for (const artifact of ['auto-long.png', 'auto-three-rows.png', 'auto.png', 'logo-only.png', 'three-lines.png']) {
             const png = await readFile(join(project, 'generated', artifact));
