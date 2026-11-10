@@ -1,6 +1,1 @@
-import { StylelintConfigBuilder } from '@tomaschochola/tooling-stylelint';
-
-export default new StylelintConfigBuilder()
-    .addRecommendedScssConfig()
-    // .addStandardScssConfig()
-    .toConfig();
+export { default } from '@tomaschochola/tooling-stylelint';
