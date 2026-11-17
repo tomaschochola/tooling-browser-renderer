@@ -21,17 +21,17 @@
     "dependencies": {
         "@babel/core": "^8.0.10",
         "@fontsource-variable/inter-tight": "^5.3.0",
-        "@tomaschochola/tooling-babel": "file:../tooling-babel",
-        "@tomaschochola/tooling-webpack": "file:../tooling-webpack",
+        "@tomaschochola/tooling-babel": "git+https://github.com/tomaschochola/tooling-babel.git",
+        "@tomaschochola/tooling-webpack": "git+https://github.com/tomaschochola/tooling-webpack.git",
         "playwright": "1.64.1",
         "webpack": "^5.112.2"
     },
     "description": "Deterministic browser rendering for screenshots, social cards, and PDF documents.",
     "devDependencies": {
-        "@tomaschochola/tooling-eslint": "file:../tooling-eslint",
-        "@tomaschochola/tooling-prettier": "file:../tooling-prettier",
-        "@tomaschochola/tooling-stylelint": "file:../tooling-stylelint",
-        "@tomaschochola/tooling-trimmer": "file:../tooling-trimmer"
+        "@tomaschochola/tooling-eslint": "git+https://github.com/tomaschochola/tooling-eslint.git",
+        "@tomaschochola/tooling-prettier": "git+https://github.com/tomaschochola/tooling-prettier.git",
+        "@tomaschochola/tooling-stylelint": "git+https://github.com/tomaschochola/tooling-stylelint.git",
+        "@tomaschochola/tooling-trimmer": "git+https://github.com/tomaschochola/tooling-trimmer.git"
     },
     "exports": {
         "./products/open-graph": "./products/open-graph/index.js"
